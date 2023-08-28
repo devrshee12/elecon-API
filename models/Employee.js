@@ -15,6 +15,10 @@ const Employee = new mongoose.Schema({
         type: String,
         default: ""
     },
+    email: {
+        type: String,
+        default: ""
+    },
     hod_id: {
         type: String,
         default: ""
@@ -33,6 +37,10 @@ const Employee = new mongoose.Schema({
     },
     role: {
         type: String,
+        default: ""
+    },
+    phoneNumber:{
+        type:String,
         default: ""
     },
     gate_name: {
