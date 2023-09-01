@@ -10,11 +10,13 @@ const createVisitor = async(req, res) => {
 
         // const {acc_name, acc_type, model_no, is_returnable} = req.body;
         // const accessories = await Accessories.create({acc_name, acc_type, model_no, is_returnable})
-        const {name, phone_no, email_id, gender, is_professional, designation, id_proof, id_number, place, visit_type, purpose, entry_gate, appointment_half} = req.body;
+        const {name, phone_no, email_id, gender, is_professional, guest_company, designation, id_proof, id_number, place, visit_type, purpose, entry_gate, appointment_half} = req.body;
         // insert created by and other fields
         const {emp_id, to_whom_id} = req.body; // actual emp_id --> _id
 
         // to_whom_id for created_by
+
+        // console.log("here in backend id_proof", id_proof)
 
 
         // to_date and from date 
@@ -27,7 +29,7 @@ const createVisitor = async(req, res) => {
         
         const from_d = new Date(from_date);
         
-        const visitor = await Visitor.create({name, phone_no, email_id, gender, is_professional, designation, id_proof, id_number, place, visit_type, purpose, entry_gate, appointment_half, created_date: new Date(), created_by: emp_id, updated_date: new Date(), updated_by: emp_id, to_date: to_d, from_date: from_d, to_whom_id});
+        const visitor = await Visitor.create({name, phone_no, email_id, gender, is_professional, designation, id_proof, id_number, place, visit_type, purpose, entry_gate, appointment_half, guest_company, created_date: new Date(), created_by: emp_id, updated_date: new Date(), updated_by: emp_id, to_date: to_d, from_date: from_d, to_whom_id});
 
         const emp = await Employee.findOne({_id:emp_id});
         emp.visitors.push(visitor._id);
@@ -70,7 +72,7 @@ const updateVisitor = async(req, res) => {
     try{
         const visitor_id = req.params.id;
 
-        const {name, phone_no, email_id, gender, is_professional, designation, id_proof, id_number, place, visit_type, purpose, entry_gate, appointment_half} = req.body;
+        const {name, phone_no, email_id, gender, is_professional, guest_company, designation, id_proof, id_number, place, visit_type, purpose, entry_gate, appointment_half} = req.body;
         const {to_date, from_date } = req.body;
         const {emp_id, to_whom_id} = req.body;
         const to_d = ((to_date === "") ? "" : new Date(to_date))
@@ -86,6 +88,7 @@ const updateVisitor = async(req, res) => {
         vis.designation = designation;
         vis.id_proof = id_proof;
         vis.id_number = id_number
+        vis.guest_company = guest_company
         vis.place = place
         vis.visit_type = visit_type
         vis.purpose = purpose
@@ -191,7 +194,7 @@ const getInTimeVisitorForEmp = async(req, res) => {
         // got all visitors for today
         const curr_datetime = new Date()
         const inVisitors = visitors.filter((visitor) => {
-            if(visitor.in_time){
+            if(visitor.in_time && !visitor.out_time){
                 return curr_datetime > visitor.in_time
             }
         })
@@ -226,13 +229,48 @@ const getOutTimeVisitorForEmp = async(req, res) => {
         // got all visitors for today
         const curr_datetime = new Date()
         const outVisitors = visitors.filter((visitor) => {
-            if(visitor.out_time){
+            if(visitor.in_time && visitor.out_time){
                 return curr_datetime > visitor.out_time
 
             }
         })
 
         res.status(200).json({valid: true, msg:"data has been fetched", data:outVisitors, count: outVisitors.length});
+
+
+    }
+    catch(err){
+        console.log(err);
+        res.status(500).json({valid: false, msg:"something went wrong"});
+    }
+}
+
+
+const getRemainingVisitorForEmp = async(req, res) => {
+    try{
+        const emp_id = req.params.emp_id
+        var start = new Date()
+        start.setHours(0,0,0,0)
+        var end = new Date()
+        end.setHours(23, 59, 59, 999)
+
+        const visitors = await Visitor.find({
+            $and: [
+                {to_whom_id: emp_id},
+                {to_date: {$gte: start}},
+                {from_date: {$lte: end}}
+            ]
+        })
+
+        // got all visitors for today
+        // const curr_datetime = new Date()
+        const reVisitors = visitors.filter((visitor) => {
+            if(!visitor.in_time && !visitor.out_time){
+                return true
+            }
+        })
+
+        res.status(200).json({valid: true, msg:"data has been fetched", data:reVisitors, count: reVisitors.length});
 
 
     }
@@ -263,17 +301,73 @@ const outTime = async(req, res) => {
     try{
         const vis_id = req.params.id
         const emp = await Visitor.findOne({_id: vis_id});
-        emp.out_time = new Date()
+        if(emp.in_time){
+            emp.out_time = new Date()
+            await emp.save()
+            res.status(200).json({valid: true, msg: "visitor has departed", emp})
 
-        await emp.save()
+        }
+        else{
+            res.status(404).json({valid: false, msg: "visitor never arrived"});
+        }
 
-        res.status(200).json({valid: true, msg: "visitor has departed", emp})
+
     }
     catch(err){
         console.log(err);
         res.status(500).json({valid: false, msg: "something went wrong"});
     }
 }
+
+
+const getAccessories = async(req, res) => {
+    try{
+        const visitorId = req.params.id;
+        const acc = await Visitor.findOne({_id: visitorId});
+        console.log("here in backend get acc");
+        const allAcc = await Accessories.find({_id: {
+            $in: acc.accessories_id
+        }})
+
+        console.log("after op");
+        res.status(200).json({valid: true, msg: "acc have been fetched", data:allAcc});
+        console.log("afteasdsadasdas");
+
+    }
+    catch(err){
+        console.log("here in err")
+        console.log(err)
+        res.status(500).json({valid: false, msg: "something went wrong"});
+    }
+}
+
+
+const deleteVisitor = async(req, res) => {
+    try{
+        const visitor_id = req.params.id;
+        const visitor = await Visitor.findByIdAndDelete({_id: visitor_id});
+        res.status(200).json({valid: true, msg: "visitor has been deleted"});
+    }
+    catch(err){
+        res.status(500).json({valid: false, msg: "something went wrong"});
+    }
+}
+
+
+const getVisitor = async(req, res) => {
+    try{    
+        const id = req.params.id
+        const visitor = await Visitor.findOne({_id:id});
+        res.status(200).json({valid: true, msg: "got visitor", data:visitor});
+        
+
+    }
+    catch(err){
+        res.status(500).json({valid: false, msg: "something went wrong"});
+    }
+}
+
+
 
 
 
@@ -287,5 +381,9 @@ module.exports = {
     getInTimeVisitorForEmp,
     getOutTimeVisitorForEmp,
     inTime,
-    outTime
+    outTime,
+    getRemainingVisitorForEmp,
+    getAccessories,
+    deleteVisitor,
+    getVisitor
 }
