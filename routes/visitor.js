@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const {createVisitor, addAccessories, updateVisitor, getAllVisitor, getAccessories, getTodayVisitor, getTodayVisitorForEmp, getInTimeVisitorForEmp, getOutTimeVisitorForEmp, inTime, outTime, getRemainingVisitorForEmp, deleteVisitor, getVisitor} = require("../controllers/visitor")
+const {createVisitor, addAccessories, updateVisitor, getAllVisitor,getAccessories, getTodayVisitor, getTodayVisitorForEmp, getInTimeVisitorForEmp, getOutTimeVisitorForEmp, inTime, outTime, getRemainingVisitorForEmp, deleteVisitor, getVisitor} = require("../controllers/visitor")
 router.post('/createVisitor', createVisitor)
 router.post('/:id/addAccessories', addAccessories)
 router.post('/:id/updateVisitor', updateVisitor)
@@ -15,6 +15,7 @@ router.post('/:id/outTime', outTime)
 router.get('/:id/getAccessories', getAccessories)
 router.delete('/:id/deleteVisitor', deleteVisitor)
 router.get('/:id', getVisitor)
+
 
 
 

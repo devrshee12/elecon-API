@@ -26,6 +26,7 @@ const employee = require("./routes/employee");
 const admin = require("./routes/admin");
 const visitor = require("./routes/visitor")
 const auth = require("./routes/auth");
+const gateUser = require("./routes/gateUser");
 
 
 
@@ -37,6 +38,7 @@ app.use("/api/v1/employee", employee);
 app.use("/api/v1/admin", admin);
 app.use("/api/v1/visitor", visitor);
 app.use("/api/v1/auth", auth);
+app.use("/api/v1/gateUser", gateUser);
 
 
 

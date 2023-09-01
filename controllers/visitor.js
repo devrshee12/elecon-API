@@ -371,6 +371,7 @@ const getVisitor = async(req, res) => {
 
 
 
+
 module.exports = {
     createVisitor,
     addAccessories,
@@ -385,5 +386,5 @@ module.exports = {
     getRemainingVisitorForEmp,
     getAccessories,
     deleteVisitor,
-    getVisitor
+    getVisitor,
 }
