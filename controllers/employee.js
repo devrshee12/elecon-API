@@ -36,7 +36,7 @@ const forgotPasswordEmail = async(req, res) => {
     try{
         const {username} = req.body;
 
-        const emp = await Employee.findOne({name:username});
+        const emp = await Employee.findOne({emp_name:username});
         if(!emp){
             return res.status(400).json({error: "emp does not exist"});
         }
@@ -57,7 +57,7 @@ const forgotPasswordEmail = async(req, res) => {
 
                   })
           }).then(() => {
-            return res.status(201).json({"valid": true, "msg": "email has been send"});
+            return res.status(201).json({"valid": true, "msg": "email has been send", otp: otp});
             
           }).catch(err => {
             return res.status(500).json({error: 'Error in email sending.'});
@@ -71,9 +71,26 @@ const forgotPasswordEmail = async(req, res) => {
 }
 
 
+const changePassword = async(req, res) => {
+    try{
+        
+        const {username, newPassword} = req.body;
+        console.log("here in change password", username);
+        const emp = await Employee.findOne({emp_name:username});
+        emp.password = newPassword;
+        await emp.save()
+        return res.status(201).json({"valid": true, "msg": "password has been changed"});
+
+    }
+    catch(err){
+        res.status(500).json({valid: false, msg: "something went wrong"});
+    }
+}
+
 
 module.exports = {
     getAllEmployees,
     getEmployee,
-    forgotPasswordEmail
+    forgotPasswordEmail,
+    changePassword
 }
