@@ -20,7 +20,8 @@ const getAllEmployees = async(req, res) => {
 const getEmployee = async(req, res) => {
     try{
         const _id = req.params.id;
-        const employee = await Employee.find({_id})
+        const employee = await Employee.findOne({_id})
+        console.log("in specific emp");
         res.status(200).json({valid: true, msg:"data fetched", data:employee});
 
     }

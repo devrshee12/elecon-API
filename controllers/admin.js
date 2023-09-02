@@ -17,11 +17,16 @@ const createEmployee = async(req, res) => {
 const updateEmployee = async(req, res) => {
     try{
         const _id = req.params.id;
-        const {emp_id, emp_name, role, gate_name, password} = req.body;
+        const {emp_id, emp_name, role, gate_name, password, email, company_name, phoneNumber, hod_id, hod_emp_id} = req.body;
         const emp = await Employee.findOne({_id});
         emp.emp_id = emp_id;
         emp.emp_name = emp_name;
         emp.role = role;
+        emp.phoneNumber = phoneNumber;
+        emp.email = email;
+        emp.company_name = company_name;
+        emp.hod_id = hod_id;
+        emp.hod_emp_id = hod_emp_id;
         emp.gate_name = gate_name
         emp.password = password
         emp.updated_date = new Date()
