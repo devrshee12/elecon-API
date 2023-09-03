@@ -99,7 +99,6 @@ const updateVisitor = async(req, res) => {
         // created_date: new Date(), created_by: to_whom_id, updated_date: new Date(), updated_by: to_whom_id, to_date: to_d, from_date: from_d, requisition_id
         vis.updated_date = new Date();
         vis.updated_by = emp_id
-        vis.to_whom_id = to_whom_id
         await vis.save()
 
         res.status(200).json({valid: true, msg:"visitor has been updated", visitor: vis});
