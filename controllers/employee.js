@@ -41,7 +41,7 @@ const forgotPasswordEmail = async(req, res) => {
         if(!emp){
             return res.status(400).json({error: "emp does not exist"});
         }
-        const emp_email = emp.email_id;
+        const emp_email = emp.email;
         console.log("emp email is ", emp_email);
         const otp = Math.random().toString().substr(2, 6)
 
