@@ -6,12 +6,14 @@ const createEmployee = async(req, res) => {
     try{
         const {emp_id, emp_name, role, gate_name, password, hod_id, hod_emp_id, email, company_name, phoneNumber} = req.body;
 
-        const c1 = await Employee.find({emp_id});
+        const c1 = await Employee.findOne({emp_id});
         if(c1){
+            console.log("here in c1", c1);
             return res.status(500).json({valid: false, msg:"somthing went wrong"});
         }
-        const c2 = await Employee.find({emp_name});
+        const c2 = await Employee.findOne({emp_name});
         if(c2){
+            console.log("here in c2", c2)
             return res.status(500).json({valid: false, msg:"somthing went wrong"});
         }
         const employee = await Employee.create({emp_id, emp_name, role, gate_name,email, company_name, phoneNumber, password, hod_id, hod_emp_id, created_date: new Date(), created_by: "admin", updated_by: new Date(), updated_by:"admin"});
