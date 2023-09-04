@@ -39,7 +39,7 @@ const login = async(req, res) => {
             res.status(200).json({valid:true, msg: "user has been found", user: emp, accessToken: token})
         }
         else{
-            res.status(200).json({valid: false, msg: "user does not exist"});
+            res.status(500).json({valid: false, msg: "user does not exist"});
         }
     }
     catch(err){
