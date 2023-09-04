@@ -5,11 +5,9 @@ const mongoose = require("mongoose");
 const Employee = new mongoose.Schema({
     emp_id: {
         type: String,
-        default: ""
     },
     emp_name: {
         type: String,
-        default: ""
     },
     password: {
         type: String,

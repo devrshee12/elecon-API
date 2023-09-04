@@ -50,7 +50,7 @@ const forgotPasswordEmail = async(req, res) => {
         sendMail({
             from: "elecon@gmail.com",
             // to: visitor_email,
-            to: "devapanchhi12@gmail.com",
+            to: emp_email,
             subject: 'For Password Change in Elecon Admin Portal',
             text: `use below OTP to change your password`,
             html: require('../services/emailTemplate')({
