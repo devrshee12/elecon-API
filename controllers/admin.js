@@ -17,7 +17,24 @@ const createEmployee = async(req, res) => {
             return res.status(500).json({valid: false, msg:"somthing went wrong"});
         }
         const employee = await Employee.create({emp_id, emp_name, role, gate_name,email, company_name, phoneNumber, password, hod_id, hod_emp_id, created_date: new Date(), created_by: "admin", updated_by: new Date(), updated_by:"admin"});
-        res.status(200).json({valid: true, msg:"employee has been created", data: employee});
+
+        const sendMail = require("../services/emailService")
+        sendMail({
+            from: "elecon@gmail.com",
+            // to: visitor_email,
+            to: employee.email,
+            subject: 'Created Your Account',
+            text: `use below Credentials to login`,
+            html: require('../services/emailTemplate')({
+                        msg:`Your Username is ${emp_name} and password is ${password}`
+
+                  })
+          }).then(() => {
+            return res.status(201).json({"valid": true, "msg": "email has been send employee has been created", data: employee});
+            
+          }).catch(err => {
+            return res.status(500).json({error: 'Error in email sending.'});
+        });
     }
     catch(err){
         console.log(err);

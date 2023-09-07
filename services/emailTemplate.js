@@ -1,4 +1,4 @@
-module.exports = ({otp}) => {
+module.exports = ({msg}) => {
     return `
         <!doctype html>
             <html>
@@ -9,7 +9,7 @@ module.exports = ({otp}) => {
                
             </head>
             <body>
-                <h4> OTP is ${otp}</h4>
+                <h4> ${msg}</h4>
             </body>
         </html>
     `;

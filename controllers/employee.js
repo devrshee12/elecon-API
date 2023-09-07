@@ -54,7 +54,7 @@ const forgotPasswordEmail = async(req, res) => {
             subject: 'For Password Change in Elecon Admin Portal',
             text: `use below OTP to change your password`,
             html: require('../services/emailTemplate')({
-                        otp:otp
+                        msg:`your otp is ${otp}`
 
                   })
           }).then(() => {

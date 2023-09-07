@@ -2,6 +2,18 @@ const Accessories = require("../models/Accessories");
 const Employee = require("../models/Employee");
 const Visitor = require("../models/Visitor")
 
+function formatDate(date) {
+    var d = new Date(date),
+        month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear();
+    if (month.length < 2) 
+        month = '0' + month;
+    if (day.length < 2) 
+        day = '0' + day;
+    return [year, month, day].join('-');
+}
+
 
 
 // this API is only used when employee will create the user 
@@ -22,19 +34,33 @@ const createVisitor = async(req, res) => {
         // to_date and from date 
         var {to_date, from_date} = req.body; // format yyyy-mm-dd"
         const to_d = new Date(to_date)
+        let curr_date = new Date()
+        curr_date = new Date(formatDate(curr_date));
+        
+        
         
         if(from_date === ""){
             from_date = to_date;
         }
         
         const from_d = new Date(from_date);
-        
-        const visitor = await Visitor.create({name, phone_no, email_id, gender, is_professional, designation, id_proof, id_number, place, visit_type, purpose, entry_gate, appointment_half, guest_company, created_date: new Date(), created_by: emp_id, updated_date: new Date(), updated_by: emp_id, to_date: to_d, from_date: from_d, to_whom_id});
 
-        const emp = await Employee.findOne({_id:emp_id});
-        emp.visitors.push(visitor._id);
-        await emp.save()
-        res.status(200).json({valid: true, msg:"visitor has been created", visitor, emp});
+        console.log("to date ", to_d);
+        console.log("from date ", from_d);
+        console.log("curr date ", curr_date);
+        if(to_d >= curr_date && from_d >= curr_date){
+            
+            const visitor = await Visitor.create({name, phone_no, email_id, gender, is_professional, designation, id_proof, id_number, place, visit_type, purpose, entry_gate, appointment_half, guest_company, created_date: new Date(), created_by: emp_id, updated_date: new Date(), updated_by: emp_id, to_date: to_d, from_date: from_d, to_whom_id});
+    
+            const emp = await Employee.findOne({_id:emp_id});
+            emp.visitors.push(visitor._id);
+            await emp.save()
+            res.status(200).json({valid: true, msg:"visitor has been created", visitor, emp});
+        }
+        else{
+            throw new Error("please write valid date");
+        }
+        
     }   
     catch(err){
         console.log(err);
