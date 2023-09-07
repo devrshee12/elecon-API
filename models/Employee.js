@@ -71,7 +71,7 @@ const Employee = new mongoose.Schema({
     },
     visitors: [
 
-    ] 
+    ]
 })
 
 
