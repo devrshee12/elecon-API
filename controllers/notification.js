@@ -82,7 +82,7 @@ const readNotification = async(req, res) => {
         
     }
     catch(err){
-        console.log(err);
+        console.log("here in error", err);
         res.status(500).json({valid: false, msg:"something went wrong"});
     }
 

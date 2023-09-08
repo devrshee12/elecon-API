@@ -9,7 +9,7 @@ const login = async(req, res) => {
         if(username === "admin" && password === "admin"){
             const token = jwt.sign({ role: "admin", id: null},
             process.env.JWT_ACCESS_TOKEN_SECRET, {
-                expiresIn:"30d"
+                expiresIn:"7d"
             })
             
             console.log("cookie set");
@@ -21,7 +21,7 @@ const login = async(req, res) => {
             
             const token = jwt.sign({ role: emp.role, id: emp._id},
                 process.env.JWT_ACCESS_TOKEN_SECRET, {
-                    expiresIn: "30d"
+                    expiresIn: "7d"
                 })
 
             // res.cookie("token", token, {
