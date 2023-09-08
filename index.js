@@ -27,7 +27,8 @@ const admin = require("./routes/admin");
 const visitor = require("./routes/visitor")
 const auth = require("./routes/auth");
 const gateUser = require("./routes/gateUser");
-const grievance = require("./routes/grievance")
+const grievance = require("./routes/grievance");
+const notification = require("./routes/notification")
 
 
 
@@ -41,6 +42,7 @@ app.use("/api/v1/visitor", visitor);
 app.use("/api/v1/auth", auth);
 app.use("/api/v1/gateUser", gateUser);
 app.use("/api/v1/grievance", grievance);
+app.use("/api/v1/notification", notification);
 
 
 
