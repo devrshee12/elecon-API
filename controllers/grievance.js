@@ -107,7 +107,7 @@ const getAllGrievanceForHOD = async(req, res) => {
             }
         }).populate("by_whom_id");
 
-        return res.status(200).json({valid: true, msg: "got all data", data: allG, count: allG.length});
+        return res.status(200).json({valid: true, msg: "got all data", data: allG.reverse(), count: allG.length});
 
     }
     catch(err){
