@@ -89,9 +89,21 @@ const changePassword = async(req, res) => {
 }
 
 
+const getAllHOD = async(req, res) => {
+    try{
+        const allHOD = await Employee.find({role: "hod"}, {emp_name:1});
+        return res.status(201).json({"valid": true, "msg": "all hod fetched", data: allHOD});
+    }
+    catch(err){
+        res.status(500).json({valid: false, msg: "something went wrong"});
+    }
+
+}
+
 module.exports = {
     getAllEmployees,
     getEmployee,
     forgotPasswordEmail,
-    changePassword
+    changePassword,
+    getAllHOD
 }

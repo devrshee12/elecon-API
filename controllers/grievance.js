@@ -105,7 +105,7 @@ const getAllGrievanceForHOD = async(req, res) => {
             by_whom_id: {
                 $in: filterEmps
             }
-        })
+        }).populate("by_whom_id");
 
         return res.status(200).json({valid: true, msg: "got all data", data: allG, count: allG.length});
 

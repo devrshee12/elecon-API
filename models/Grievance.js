@@ -12,8 +12,8 @@ const Grievance = new mongoose.Schema({
         default:""
     },
     by_whom_id: {
-        type: String,
-        default: ""
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Employee"
     },
     grievance_date: {
         type: Date,
