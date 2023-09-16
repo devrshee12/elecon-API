@@ -20,7 +20,7 @@ const createGrievance = async(req, res) => {
 
 const getAllGrievance = async(req, res) => {
     try{
-        const result = await Grievance.find({});
+        const result = await Grievance.find({}).populate("by_whom_id");
         return res.status(200).json({valid: true, msg: "all grievances has been fetched", data: result, count: result.length});
     }
     catch(err){
@@ -34,7 +34,7 @@ const getAllGrievanceForEmp = async(req, res) => {
     try{
         const emp_id = req.params.emp_id
         const result = await Grievance.find({by_whom_id: emp_id});
-        return res.status(200).json({valid: true, msg: "all grievances has been fetched", data: result, count: result.length});
+        return res.status(200).json({valid: true, msg: "all grievances has been fetched", data: result.reverse(), count: result.length});
     }
     catch(err){
         console.log(err);
@@ -118,6 +118,21 @@ const getAllGrievanceForHOD = async(req, res) => {
 }
 
 
+const getSpecificGrievance = async(req, res) => {
+    try{
+
+        const g_id = req.params.g_id;
+        const result = await Grievance.findOne({_id:g_id}).populate("by_whom_id");
+        return res.status(200).json({valid: true, msg: "got data", data: result});
+
+
+    }
+    catch(err){
+        console.log(err);
+    }
+
+}
+
 
 
 
@@ -131,5 +146,6 @@ module.exports = {
     updateGrievance,
     updateStatus,
     deleteGrievance,
-    getAllGrievanceForHOD
+    getAllGrievanceForHOD,
+    getSpecificGrievance
 }

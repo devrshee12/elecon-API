@@ -101,8 +101,8 @@ const Visitor = new mongoose.Schema({
     },
     accessories_id:[],
     to_whom_id:{
-        type:String,
-        default: "",
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Employee"
     },
     in_time: {
         type: Date,

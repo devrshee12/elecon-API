@@ -394,6 +394,35 @@ const getVisitor = async(req, res) => {
 
 
 
+const getVisitorForDate = async(req, res) => {
+    try{
+        const {date} = req.body;
+        // console.log("date : ", date);
+        // const gotDate = new Date(date);
+        var start = new Date(date)
+        start.setHours(0,0,0,0)
+        var end = new Date(date)
+        end.setHours(23, 59, 59, 999)
+        console.log(start);
+        console.log(end);
+        const visitors = await Visitor.find({
+            $and : [
+                {to_date: {$gte: start}},
+                {from_date: {$lte: end}}
+            ]
+        }).populate("to_whom_id");
+        res.status(200).json({valid: true, msg: "got visitor", data: visitors, count: visitors.length});
+
+
+    }
+    catch(err){
+        res.status(500).json({valid: false, msg: "something went wrong"});
+    }
+
+}
+
+
+
 
 
 
@@ -412,4 +441,5 @@ module.exports = {
     getAccessories,
     deleteVisitor,
     getVisitor,
+    getVisitorForDate
 }

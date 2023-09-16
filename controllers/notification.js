@@ -22,7 +22,7 @@ const getNotification = async(req, res) => {
     try{
         const emp_id = req.params.emp_id;
         const notifications = await Notification.find({receiver_id: emp_id}).populate("sender_id");
-        return res.status(200).json({valid: true, msg: "Notification has been created", data: notifications, count: notifications.length});
+        return res.status(200).json({valid: true, msg: "Notification has been created", data: notifications.reverse(), count: notifications.length});
     }
     catch(err){
         console.log(err);
@@ -40,7 +40,7 @@ const getUnreadNotification = async(req, res) => {
                 {is_read: false},
             ]
         }).populate("sender_id");
-        return res.status(200).json({valid: true, msg: "Notification has been created", data: notifications, count: notifications.length});
+        return res.status(200).json({valid: true, msg: "Notification has been created", data: notifications.reverse(), count: notifications.length});
 
     }
     catch(err){
@@ -60,7 +60,7 @@ const getReadNotification = async(req, res) => {
                 {is_read: true},
             ]
         }).populate("sender_id");
-        return res.status(200).json({valid: true, msg: "Notification has been created", data: notifications, count: notifications.length});
+        return res.status(200).json({valid: true, msg: "Notification has been created", data: notifications.reverse(), count: notifications.length});
 
     }
     catch(err){
