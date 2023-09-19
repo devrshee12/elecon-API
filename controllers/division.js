@@ -60,29 +60,32 @@ const updateDivision = async(req, res) => {
 
 const getAllDivision = async(req, res) => {
     try{
-        const companies = await Company.find({}).populate({
-            path: "division",
-            model: "Division",
-            populate:{
-                path:"department",
-                model:"Department",
-                populate: {
-                    path: "sub_department",
-                    model: "SubDepartment"
-                }
-            }
-        });
 
-        const result = [];
-        companies.forEach((company) => {
-            company.division.forEach((division) => {
-                const t = {};
-                t['division'] = division.division_name;
-                t['company'] = company.company_name;
-                result.push(t);
-            })
-        })
-        res.status(200).json({valid: true, msg:"department has been fetched", data:result, count: result.length});
+        const divisions = await Division.find({}, {_id: 1, division_name: 1});
+
+        // const companies = await Company.find({}).populate({
+        //     path: "division",
+        //     model: "Division",
+        //     populate:{
+        //         path:"department",
+        //         model:"Department",
+        //         populate: {
+        //             path: "sub_department",
+        //             model: "SubDepartment"
+        //         }
+        //     }
+        // });
+
+        // const result = [];
+        // companies.forEach((company) => {
+        //     company.division.forEach((division) => {
+        //         const t = {};
+        //         t['division'] = division.division_name;
+        //         t['company'] = company.company_name;
+        //         result.push(t);
+        //     })
+        // })
+        res.status(200).json({valid: true, msg:"division has been fetched", data:divisions, count: divisions.length});
     }
     catch(err){
         console.log(err);

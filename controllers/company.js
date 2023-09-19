@@ -84,19 +84,26 @@ const deleteCompany = async(req, res) => {
 
 const getCompanies = async(req, res) => {
     try{
-        const companies = await Company.find({}).populate({
-            path: "division",
-            model: "Division",
-            populate:{
-                path:"department",
-                model:"Department",
-                populate: {
-                    path: "sub_department",
-                    model: "SubDepartment"
-                }
-            }
-        });
+        const companies = await Company.find({}, {_id: 1, company_name: 1});
         res.status(200).json({valid: true, msg: "yes", data: companies});
+    }
+    catch(err){
+        console.log(err);
+        res.status(500).json({valid: false, msg:"somthing went wrong"});
+    }
+
+}
+
+
+
+
+const getDivisionByCompany = async(req, res) => {
+    console.log("here in divison company")
+    try{    
+        const c_id = req.params.c_id;
+        const divisions = await Company.findOne({_id: c_id}, {_id: 0, division: 1}).populate("division")
+
+        res.status(200).json({valid: true, msg: "yes", data: divisions});
     }
     catch(err){
         console.log(err);
@@ -116,5 +123,6 @@ module.exports = {
     getCompanies,
     deleteCompany,
     updateCompany,
-    getSpecificCompany
+    getSpecificCompany,
+    getDivisionByCompany
 }

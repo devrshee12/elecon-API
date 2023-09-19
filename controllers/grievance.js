@@ -129,11 +129,32 @@ const getSpecificGrievance = async(req, res) => {
     }
     catch(err){
         console.log(err);
+        res.status(500).json({valid: false, msg:"somthing went wrong"});
     }
 
 }
 
 
+const countOfAllGrievance = async(req, res) => {
+    try{
+        const result = await Grievance.aggregate([
+            {
+                $group : {
+                    _id: "$status",
+                    count: {$sum: 1}
+                }
+            }
+        ])
+
+        return res.status(200).json({valid: true, msg: "got data", data: result});
+
+        
+    }
+    catch(err){
+        console.log(err);
+        res.status(500).json({valid: false, msg:"somthing went wrong"});
+    }
+}
 
 
 
@@ -147,5 +168,6 @@ module.exports = {
     updateStatus,
     deleteGrievance,
     getAllGrievanceForHOD,
-    getSpecificGrievance
+    getSpecificGrievance,
+    countOfAllGrievance
 }
