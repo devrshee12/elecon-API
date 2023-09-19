@@ -1,8 +1,11 @@
 const express = require('express')
 const router = express.Router()
-const {createCompany, getCompany} = require("../controllers/company");
+const {createCompany, getCompanies, deleteCompany, updateCompany, getSpecificCompany} = require("../controllers/company");
 router.post('/', createCompany)
-router.get('/', getCompany)
+router.get('/getAll', getCompanies)
+router.post('/c:id', updateCompany)
+router.get('/c:id', getSpecificCompany)
+router.delete('/c:id', deleteCompany)
 
 
 

@@ -21,7 +21,7 @@ const createGrievance = async(req, res) => {
 const getAllGrievance = async(req, res) => {
     try{
         const result = await Grievance.find({}).populate("by_whom_id");
-        return res.status(200).json({valid: true, msg: "all grievances has been fetched", data: result, count: result.length});
+        return res.status(200).json({valid: true, msg: "all grievances has been fetched", data: result.reverse(), count: result.length});
     }
     catch(err){
         console.log(err);
