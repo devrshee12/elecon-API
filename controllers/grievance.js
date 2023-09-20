@@ -157,6 +157,76 @@ const countOfAllGrievance = async(req, res) => {
 }
 
 
+const countOfEmpGrievance = async(req, res) => {
+    try{
+        const result = await Grievance.find({}).populate("by_whom_id");
+
+        
+
+        let mp = new Map();
+        result.forEach((el) => {
+            const temp = el?.by_whom_id?.emp_name
+            if(mp.has(temp)){
+                mp.set(temp, mp.get(temp) + 1)
+            }
+            else{
+                mp.set(temp, 1);
+            }
+        })
+
+        const emps = await Employee.find({role: "employee"});
+
+        
+
+        const ans = emps.map((el) => {
+            if(mp.has(el?.emp_name)){
+                return {label: el?.emp_name, value: mp.get(el?.emp_name)};
+            }
+            else{
+                return {label: el?.emp_name, value: 0};
+            }
+        })
+
+
+        return res.status(200).json({valid: true, msg: "got data", data: ans});
+        
+    }
+    catch(err){
+        console.log(err);
+        res.status(500).json({valid: false, msg:"somthing went wrong"});
+    }
+
+}
+
+
+const resolvedAnalysis = async(req, res) => {
+    try{
+        const all = await Grievance.find({});
+        
+        const total = all.length;
+        const resolvedCount = all.reduce((total, el) => {
+            if(el?.status !== "pending"){
+                return total + 1;
+            }
+            else{
+                return total + 0;
+            }
+        }, 0)
+
+        const resolvedPercentage = parseInt((resolvedCount/total)*100, 10);
+        return res.status(200).json({valid: true, msg: "got data", data: {total, resolvedCount, resolvedPercentage : parseInt(resolvedPercentage, 10), pendingCount: total - resolvedCount}});
+
+
+
+    }
+    catch(err){
+        console.log(err);
+        res.status(500).json({valid: false, msg:"somthing went wrong"});
+    }
+
+}
+
+
 
 
 
@@ -169,5 +239,7 @@ module.exports = {
     deleteGrievance,
     getAllGrievanceForHOD,
     getSpecificGrievance,
-    countOfAllGrievance
+    countOfAllGrievance,
+    countOfEmpGrievance,
+    resolvedAnalysis
 }
