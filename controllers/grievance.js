@@ -227,6 +227,83 @@ const resolvedAnalysis = async(req, res) => {
 }
 
 
+const getDataForActivityGrievance = async(req, res) => {
+    try{
+        const result = await Grievance.aggregate([
+            {
+              $group: {
+                _id: {
+                  by_whom_id: "$by_whom_id", // Group by the employee who submitted the grievance
+                  status: "$status" // Group by the grievance status
+                },
+                count: { $sum: 1 } // Count the number of grievances for each combination of to_whom_id and status
+              }
+            }
+
+        ])
+
+        let mp = new Map();
+        // const generatedData = [];
+        result.forEach((el) => {
+            console.log(el);
+            // console.log(toString(el.to_whom_id._id));
+            mp.set(`${el._id.by_whom_id.toString()} ${el._id.status}`,  el.count)
+
+        })
+
+        console.log(mp);
+        const emps = await Employee.find({});
+        const t = new mongoose.Types.ObjectId("64f5a2daecd3be7fcf407a0d")
+        console.log(t)
+        console.log("here in dasdas", mp.get(`64f5a2daecd3be7fcf407a0d declined`));
+        
+        const ans = emps.map((emp) => { 
+            let p = 0
+            let a = 0
+            let d = 0
+            if(mp.has(`${emp._id} pending`)){
+                p = mp.get(`${emp._id} pending`)
+            }
+            if(mp.has(`${emp._id} approved`)){
+                a = mp.get(`${emp._id} approved`)
+            }
+            if(mp.has(`${emp._id} declined`)){
+                d = mp.get(`${emp._id} declined`)
+            }
+
+            return {name: emp.emp_name, data: [p, a, d], role: emp.role};
+        })
+
+        const labels = []
+        const pending = []
+        const declined = []
+        const approved = []
+        const res1 = ans.filter((el)=> {
+            if(el.role === "employee"){
+                labels.push(el.name);
+                pending.push(el.data[0])
+                approved.push(el.data[1])
+                declined.push(el.data[2])
+                return true;
+            }
+        }) 
+
+        const generatedData = [
+            {name: "Pending", data: pending},
+            {name: "Approved", data: approved},
+            {name: "Declined", data: declined},
+        ]
+
+        return res.status(200).json({valid: true, msg: "got data", data: generatedData, res1, labels});
+
+    }
+    catch(err){
+        console.log(err);
+        res.status(500).json({valid: false, msg:"somthing went wrong"});
+    }
+}
+
+
 
 
 
@@ -241,5 +318,6 @@ module.exports = {
     getSpecificGrievance,
     countOfAllGrievance,
     countOfEmpGrievance,
-    resolvedAnalysis
+    resolvedAnalysis,
+    getDataForActivityGrievance
 }

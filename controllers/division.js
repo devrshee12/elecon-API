@@ -94,7 +94,18 @@ const getAllDivision = async(req, res) => {
 }
 
 
+const getDepartmentByDivision = async(req, res) => {
+    try{    
+        const d_id = req.params.d_id;
+        const departments = await Division.findOne({_id: d_id}, {_id: 0, department: 1}).populate("department")
 
+        res.status(200).json({valid: true, msg: "fetched departments", data: departments, count: departments.department.length});
+    }
+    catch(err){
+        console.log(err);
+        res.status(500).json({valid: false, msg:"somthing went wrong"});
+    }
+}
 
 const deleteDivision = async(req, res) => {
     try{
@@ -115,5 +126,6 @@ module.exports = {
     getSpecificDivision,
     updateDivision,
     // addDepartment,
-    deleteDivision
+    deleteDivision,
+    getDepartmentByDivision
 }

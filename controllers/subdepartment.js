@@ -100,6 +100,7 @@ const getAllSubDepartment = async(req, res) => {
                         t['department'] = department.department_name;
                         t['division'] = division.division_name;
                         t['company'] = company.company_name;
+                        t['gl_code'] = sub_department.gl_code
                         result.push(t);
                     })
 

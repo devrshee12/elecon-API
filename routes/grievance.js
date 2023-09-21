@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const {createGrievance, getAllGrievanceForEmp, getAllGrievance, resolvedAnalysis, countOfAllGrievance, countOfEmpGrievance, updateGrievance, getSpecificGrievance ,updateStatus, deleteGrievance, getAllGrievanceForHOD} = require("../controllers/grievance");
+const {createGrievance, getAllGrievanceForEmp, getAllGrievance, resolvedAnalysis, getDataForActivityGrievance, countOfAllGrievance, countOfEmpGrievance, updateGrievance, getSpecificGrievance ,updateStatus, deleteGrievance, getAllGrievanceForHOD} = require("../controllers/grievance");
 router.post('/:emp_id', createGrievance)
 router.get('/:emp_id', getAllGrievanceForEmp)
 router.get('/', getAllGrievance)
@@ -12,6 +12,7 @@ router.get('/specific/:g_id', getSpecificGrievance)
 router.get('/analysis/countStatus', countOfAllGrievance);
 router.get('/analysis/empCountGrievance', countOfEmpGrievance);
 router.get('/analysis/resolved', resolvedAnalysis);
+router.get('/analysis/grouped', getDataForActivityGrievance);
 
 
 
