@@ -422,6 +422,69 @@ const getVisitorForDate = async(req, res) => {
 }
 
 
+const getVisitorCountMonthVise = async(req, res) => {
+    
+    try{
+        const result = await Visitor.aggregate([
+            {
+              $match: {
+                from_date: { $exists: true },
+                to_date: { $exists: true },
+              },
+            },
+            {
+              $group: {
+                _id: {
+                  year: { $year: "$from_date" },
+                  month: { $month: "$from_date" },
+                },
+                count: { $sum: 1 },
+              },
+            },
+          ]);
+        return res.status(200).json({valid: true, msg: "got visitor", data: result});
+    }
+    catch(err){
+        console.log(err);
+        res.status(500).json({valid: false, msg: "something went wrong"});
+    }
+}
+
+
+
+const getCountForEmp = async(req, res) => {
+    try{
+        const to_whom_id = req.params.to_whom_id;
+
+        const visitors = await Visitor.find({to_whom_id: to_whom_id});
+
+        let countInVisitors = 0
+        let countOutVisitors = 0
+
+        visitors.forEach((visitor) => {
+            if(visitor.in_time !== null && visitor.out_time === null){
+                countInVisitors += 1;
+            }
+            else if(visitor.in_time !== null && visitor.out_time !== null){
+                countOutVisitors += 1;
+            }
+        })
+        
+        
+
+        return res.status(200).json({valid: true, msg: "got data", data: {
+            inCount: countInVisitors,
+            outCount: countOutVisitors,
+            totalCount: visitors.length
+        }});
+
+    }
+    catch(err){
+        console.log(err);
+        res.status(500).json({valid: false, msg: "something went wrong"});
+    }
+
+}
 
 
 
@@ -444,5 +507,7 @@ module.exports = {
     getAccessories,
     deleteVisitor,
     getVisitor,
-    getVisitorForDate
+    getVisitorForDate,
+    getVisitorCountMonthVise,
+    getCountForEmp
 }
