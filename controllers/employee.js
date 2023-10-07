@@ -100,10 +100,42 @@ const getAllHOD = async(req, res) => {
 
 }
 
+const countEmpBasedOnRole = async(req, res) => {
+    try{
+        const counts = await Employee.aggregate([
+            {
+                $group: {
+                    _id: "$role",
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    role: "$_id",
+                    count: 1
+                }
+            }
+        ]);
+        const result = counts.map((c) => {
+            return {
+                label: c.role,
+                value: c.count
+            }
+        })
+        return res.status(201).json({"valid": true, "msg": "all hod fetched", data: result});
+    }
+    catch(err){
+        res.status(500).json({valid: false, msg: "something went wrong"});
+    }
+}
+
+
 module.exports = {
     getAllEmployees,
     getEmployee,
     forgotPasswordEmail,
     changePassword,
-    getAllHOD
+    getAllHOD,
+    countEmpBasedOnRole
 }

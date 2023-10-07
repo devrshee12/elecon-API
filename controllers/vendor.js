@@ -84,7 +84,7 @@ const getVendors = async(req, res) => {
 const getSpecificVendor = async(req, res) => {
     try{
         const v_id = req.params.v_id;
-        const vendor = await VendorMaster.findOne({_id: v_id});
+        const vendor = await VendorMaster.findOne({_id: v_id}).populate("company", "company_name").populate("division", "division_name").populate("department", "department_name");
         return res.status(200).json({valid: true, msg:"vendor has been fetched", data:vendor});
     }
     catch(err){
