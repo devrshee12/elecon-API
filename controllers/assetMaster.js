@@ -21,7 +21,57 @@ const createAsset = async(req, res) => {
 
 const getAssets = async(req, res) => {
     try{
-        const assets = await AssetMaster.find({});
+        // const assets = await AssetMaster.find({}).populate("company", "company_name").populate("division", "division_name").populate("department", "department_name");
+        const assets = await AssetMaster.aggregate([
+            {
+                $lookup: {
+                    from: "companies", // Assuming the name of the company collection is "companies"
+                    localField: "company",
+                    foreignField: "_id",
+                    as: "company"
+                }
+            },
+            {
+                $unwind: "$company" // Convert the "company" array to an object
+            },
+            {
+                $lookup: {
+                    from: "divisions", // Assuming the name of the division collection is "divisions"
+                    localField: "division",
+                    foreignField: "_id",
+                    as: "division"
+                }
+            },
+            {
+                $unwind: "$division" // Convert the "division" array to an object
+            },
+            {
+                $lookup: {
+                    from: "departments", // Assuming the name of the department collection is "departments"
+                    localField: "department",
+                    foreignField: "_id",
+                    as: "department"
+                }
+            },
+            {
+                $unwind: "$department" // Convert the "department" array to an object
+            },
+            {
+                $project: {
+                    _id: 1,
+                    created_date: 1,
+                    created_by: 1,
+                    updated_date: 1,
+                    updated_by: 1,
+                    deleted_date: 1,
+                    deleted_by: 1,
+                    asset_name: 1,
+                    company: "$company.company_name", // Extract company name as a string
+                    division: "$division.division_name",
+                    department: "$department.department_name"
+                }
+            }
+        ])
         return res.status(200).json({valid: true, msg:"assets has been fetched", data:assets, count: assets.length});
     }
     catch(err){
