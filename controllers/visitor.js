@@ -139,8 +139,12 @@ const updateVisitor = async(req, res) => {
 
 const getAllVisitor = async(req, res) => {
     try{
-        const visitors = await Visitor.find({});
-        res.status(200).json({valid: true, msg:"data has been fetched", data:visitors, count: visitors.length});
+        const visitors = await Visitor.find({}, {in_time: 1, to_whom_id: 1});
+        let c = 0;
+        visitors.forEach((v) => {
+            if(v.in_time !== null)c++;
+        })
+        res.status(200).json({valid: true, msg:"data has been fetched", data:visitors, count: visitors.length, intimec: c});
 
     }
     catch(err){
@@ -425,24 +429,101 @@ const getVisitorForDate = async(req, res) => {
 const getVisitorCountMonthVise = async(req, res) => {
     
     try{
-        const result = await Visitor.aggregate([
+        // const result = await Visitor.aggregate([
+        //     {
+        //       $match: {
+        //         from_date: { $exists: true },
+        //         to_date: { $exists: true },
+        //       },
+        //     },
+        //     {
+        //       $group: {
+        //         _id: {
+        //           year: { $year: "$from_date" },
+        //           month: { $month: "$from_date" },
+        //         },
+        //         count: { $sum: 1 },
+        //       },
+        //     },
+        //   ]);
+        const currentYearStartDate = new Date();
+        currentYearStartDate.setMonth(currentYearStartDate.getMonth() - 11);
+        currentYearStartDate.setDate(1); // Set the day to 1st of the month
+
+        const allMonthsVisitorCounts = await Visitor.aggregate([
             {
-              $match: {
-                from_date: { $exists: true },
-                to_date: { $exists: true },
-              },
+                $match: {
+                    in_time: {
+                        $gte: currentYearStartDate, // Start date for the first day of the current 12 months
+                        $lte: new Date() // Current date
+                    }
+                }
             },
             {
-              $group: {
-                _id: {
-                  year: { $year: "$from_date" },
-                  month: { $month: "$from_date" },
-                },
-                count: { $sum: 1 },
-              },
+                $group: {
+                    _id: {
+                        to_whom_id: "$to_whom_id",
+                        month: { $month: "$in_time" }
+                    },
+                    count: { $sum: 1 }
+                }
             },
-          ]);
-        return res.status(200).json({valid: true, msg: "got visitor", data: result});
+            {
+                $sort: { "_id.to_whom_id": 1, "_id.month": 1 }
+            },
+            {
+                $group: {
+                    _id: "$_id.to_whom_id",
+                    counts: {
+                        $push: {
+                            month: "$_id.month",
+                            count: "$count"
+                        }
+                    }
+                }
+            }
+        ]);
+        
+        // Create an object to hold the counts for each to_whom_id
+        const t = await Visitor.find({}, {to_whom_id:1, _id:0}).populate("to_whom_id", "emp_name");
+        const emps = {}
+        t.forEach((el) => {
+            if(!emps[el.to_whom_id._id]){
+                emps[el.to_whom_id._id] = el.to_whom_id.emp_name
+            }
+        })
+
+        const countsArray = Array.from({ length: 12 }, () => 0);
+        const countsByToWhomId = {};
+        
+        // Initialize the counts for each to_whom_id with arrays of 12 zeros
+        allMonthsVisitorCounts.forEach((item) => {
+            const toWhomId = emps[item._id.toString()]; // Convert ObjectId to string
+            const monthIndex = item.counts[0].month - 1; // Adjust month index to be zero-based
+            countsArray[monthIndex] += item.counts[0].count;
+            if (!countsByToWhomId[toWhomId]) {
+                countsByToWhomId[toWhomId] = Array.from({ length: 12 }, () => 0);
+            }
+            countsByToWhomId[toWhomId][item.counts[0].month - 1] += item.counts[0].count;
+        });
+
+        countsByToWhomId["all"] = countsArray
+
+        const finalResult = []
+        for(key in countsByToWhomId){
+            finalResult.push({
+                year: key,
+                data: [{
+                    name:"Visitor Count",
+                    data: countsByToWhomId[key]
+                }]
+            })
+        }
+
+        
+        
+        
+        return res.status(200).json({valid: true, msg: "got visitor", data: finalResult, t: allMonthsVisitorCounts});
     }
     catch(err){
         console.log(err);
