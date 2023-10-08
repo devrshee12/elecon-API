@@ -4,19 +4,16 @@ const Employee = require("../models/Employee");
 
 const createEmployee = async(req, res) => {
     try{
-        const {emp_id, emp_name, role, gate_name, password, hod_id, hod_emp_id, email, company_name, phoneNumber} = req.body;
+        const {emp_name, role, gate_name, password, hod_id, email, phoneNumber} = req.body;
+        const {company, division, department} = req.body;
 
-        const c1 = await Employee.findOne({emp_id});
-        if(c1){
-            console.log("here in c1", c1);
-            return res.status(500).json({valid: false, msg:"somthing went wrong"});
-        }
+        
         const c2 = await Employee.findOne({emp_name});
         if(c2){
             console.log("here in c2", c2)
             return res.status(500).json({valid: false, msg:"somthing went wrong"});
         }
-        const employee = await Employee.create({emp_id, emp_name, role, gate_name,email, company_name, phoneNumber, password, hod_id, hod_emp_id, created_date: new Date(), created_by: "admin", updated_by: new Date(), updated_by:"admin"});
+        const employee = await Employee.create({emp_name, role, gate_name,email, phoneNumber, password, hod_id, company, division, department, created_date: new Date(), created_by: "admin", updated_by: new Date(), updated_by:"admin"});
 
         const sendMail = require("../services/emailService")
         sendMail({
@@ -46,16 +43,17 @@ const createEmployee = async(req, res) => {
 const updateEmployee = async(req, res) => {
     try{
         const _id = req.params.id;
-        const {emp_id, emp_name, role, gate_name, password, email, company_name, phoneNumber, hod_id, hod_emp_id} = req.body;
+        const { emp_name, role, gate_name, password, email, phoneNumber, hod_id} = req.body;
+        const {company, division, department} = req.body;
         const emp = await Employee.findOne({_id});
-        emp.emp_id = emp_id;
+        emp.company = company
+        emp.division = division
+        emp.department = department
         emp.emp_name = emp_name;
         emp.role = role;
         emp.phoneNumber = phoneNumber;
         emp.email = email;
-        emp.company_name = company_name;
         emp.hod_id = hod_id;
-        emp.hod_emp_id = hod_emp_id;
         emp.gate_name = gate_name
         emp.password = password
         emp.updated_date = new Date()

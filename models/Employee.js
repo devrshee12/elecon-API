@@ -71,7 +71,19 @@ const Employee = new mongoose.Schema({
     },
     visitors: [
 
-    ]
+    ],
+    company: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Company"
+    },
+    division: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Division"
+    },
+    department: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Department"
+    }
 })
 
 

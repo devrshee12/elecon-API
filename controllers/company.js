@@ -114,6 +114,22 @@ const getDivisionByCompany = async(req, res) => {
 
 
 
+const getCompaniesWithDivisionAndDept = async(req, res) => {
+    try{
+        const result = await Company.find({}).populate({
+            path:"division",
+            populate:{
+                path:"department"
+            }
+        }) 
+        res.status(200).json({valid: true, msg: "yes", data: result});
+    }
+    catch(err){
+        res.status(500).json({valid: false, msg:"somthing went wrong"});
+    }
+}
+
+
 
 
 
@@ -124,5 +140,6 @@ module.exports = {
     deleteCompany,
     updateCompany,
     getSpecificCompany,
-    getDivisionByCompany
+    getDivisionByCompany,
+    getCompaniesWithDivisionAndDept
 }

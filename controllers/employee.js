@@ -6,7 +6,64 @@ const Visitor = require("../models/Visitor");
 
 const getAllEmployees = async(req, res) => {
     try{
-        const employees = await Employee.find({});
+        const employees = await Employee.find({}).populate("company", "company_name").populate("division", "division_name").populate("department", "department_name");
+
+
+        // const employees = await Employee.aggregate([
+        //     {
+        //         $lookup: {
+        //             from: "companies", // Assuming the name of the company collection is "companies"
+        //             localField: "company",
+        //             foreignField: "_id",
+        //             as: "company"
+        //         }
+        //     },
+        //     {
+        //         $unwind: "$company" // Convert the "company" array to an object
+        //     },
+        //     {
+        //         $lookup: {
+        //             from: "divisions", // Assuming the name of the division collection is "divisions"
+        //             localField: "division",
+        //             foreignField: "_id",
+        //             as: "division"
+        //         }
+        //     },
+        //     {
+        //         $unwind: "$division" // Convert the "division" array to an object
+        //     },
+        //     {
+        //         $lookup: {
+        //             from: "departments", // Assuming the name of the department collection is "departments"
+        //             localField: "department",
+        //             foreignField: "_id",
+        //             as: "department"
+        //         }
+        //     },
+        //     {
+        //         $unwind: "$department" // Convert the "department" array to an object
+        //     },
+        //     {
+        //         $project: {
+        //             _id: 1,
+        //             created_date: 1,
+        //             created_by: 1,
+        //             updated_date: 1,
+        //             updated_by: 1,
+        //             deleted_date: 1,
+        //             deleted_by: 1,
+        //             emp_name: 1,
+        //             // password: 1,
+        //             // email: 1,
+        //             // role: 1,
+        //             // phoneNumber: 1,
+        //             // gate_name: 1,
+        //             company: "$company.company_name", // Extract company name as a string
+        //             division: "$division.division_name",
+        //             department: "$department.department_name"
+        //         }
+        //     }
+        // ])
         
         res.status(200).json({valid: true, msg:"data fetched", data:employees});
     }
@@ -20,7 +77,7 @@ const getAllEmployees = async(req, res) => {
 const getEmployee = async(req, res) => {
     try{
         const _id = req.params.id;
-        const employee = await Employee.findOne({_id})
+        const employee = await Employee.findOne({_id}).populate("company", "company_name").populate("division", "division_name").populate("department", "department_name")
         console.log("in specific emp");
         res.status(200).json({valid: true, msg:"data fetched", data:employee});
 
