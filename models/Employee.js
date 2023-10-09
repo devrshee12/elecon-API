@@ -5,9 +5,11 @@ const mongoose = require("mongoose");
 const Employee = new mongoose.Schema({
     emp_id: {
         type: String,
+        default: "",
     },
     emp_name: {
         type: String,
+        default: "",
     },
     password: {
         type: String,
@@ -18,8 +20,8 @@ const Employee = new mongoose.Schema({
         default: ""
     },
     hod_id: {
-        type: String,
-        default: ""
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Employee"
     },
     hod_emp_id: {
         type: String,

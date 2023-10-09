@@ -6,7 +6,7 @@ const Visitor = require("../models/Visitor");
 
 const getAllEmployees = async(req, res) => {
     try{
-        const employees = await Employee.find({}).populate("company", "company_name").populate("division", "division_name").populate("department", "department_name");
+        const employees = await Employee.find({}).populate("company", "company_name").populate("division", "division_name").populate("department", "department_name").populate("hod_id", "emp_name");
 
 
         // const employees = await Employee.aggregate([
@@ -77,7 +77,7 @@ const getAllEmployees = async(req, res) => {
 const getEmployee = async(req, res) => {
     try{
         const _id = req.params.id;
-        const employee = await Employee.findOne({_id}).populate("company", "company_name").populate("division", "division_name").populate("department", "department_name")
+        const employee = await Employee.findOne({_id}).populate("company", "company_name").populate("division", "division_name").populate("department", "department_name").populate("hod_id", "emp_name")
         console.log("in specific emp");
         res.status(200).json({valid: true, msg:"data fetched", data:employee});
 

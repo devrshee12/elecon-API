@@ -6,14 +6,21 @@ const createEmployee = async(req, res) => {
     try{
         const {emp_name, role, gate_name, password, hod_id, email, phoneNumber} = req.body;
         const {company, division, department} = req.body;
+        const {emp_id} = req.body;
 
+        console.log("here emp id id id", typeof emp_id);
+
+        const c1 = await Employee.findOne({emp_id});
+        if(c1){
+            return res.status(500).json({valid: false, msg:"something went wrong"});
+        }
         
         const c2 = await Employee.findOne({emp_name});
         if(c2){
             console.log("here in c2", c2)
-            return res.status(500).json({valid: false, msg:"somthing went wrong"});
+            return res.status(500).json({valid: false, msg:"something went wrong"});
         }
-        const employee = await Employee.create({emp_name, role, gate_name,email, phoneNumber, password, hod_id, company, division, department, created_date: new Date(), created_by: "admin", updated_by: new Date(), updated_by:"admin"});
+        const employee = await Employee.create({emp_id, emp_name, role, gate_name,email, phoneNumber, password, hod_id, company, division, department, created_date: new Date(), created_by: "admin", updated_by: new Date(), updated_by:"admin"});
 
         const sendMail = require("../services/emailService")
         sendMail({
@@ -44,8 +51,10 @@ const updateEmployee = async(req, res) => {
     try{
         const _id = req.params.id;
         const { emp_name, role, gate_name, password, email, phoneNumber, hod_id} = req.body;
+        const {emp_id} = req.body;
         const {company, division, department} = req.body;
         const emp = await Employee.findOne({_id});
+        emp.emp_id = emp_id
         emp.company = company
         emp.division = division
         emp.department = department
