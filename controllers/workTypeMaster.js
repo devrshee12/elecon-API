@@ -84,7 +84,7 @@ const getWorkTypes = async(req, res) => {
 const getSpecificWorkType = async(req, res) => {
     try{
         const w_id = req.params.w_id;
-        const workType = await WorkTypeMaster.findOne({_id: w_id});
+        const workType = await WorkTypeMaster.findOne({_id: w_id}).populate("company", "company_name").populate("division", "division_name").populate("department", "department_name");
         return res.status(200).json({valid: true, msg:"workType has been fetched", data:workType});
     }
     catch(err){

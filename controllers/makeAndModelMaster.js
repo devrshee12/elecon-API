@@ -84,7 +84,7 @@ const getMAndMs = async(req, res) => {
 const getSpecificMAndM = async(req, res) => {
     try{
         const m_id = req.params.m_id;
-        const m_m = await MakeAndModelMaster.findOne({_id: m_id});
+        const m_m = await MakeAndModelMaster.findOne({_id: m_id}).populate("company", "company_name").populate("division", "division_name").populate("department", "department_name");
         return res.status(200).json({valid: true, msg:"make and model has been fetched", data:m_m});
     }
     catch(err){

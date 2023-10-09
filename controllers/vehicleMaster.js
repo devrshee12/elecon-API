@@ -84,7 +84,7 @@ const getVehicles = async(req, res) => {
 const getSpecificVehicle = async(req, res) => {
     try{
         const v_id = req.params.v_id;
-        const vehicle = await VehicleMaster.findOne({_id: v_id});
+        const vehicle = await VehicleMaster.findOne({_id: v_id}).populate("company", "company_name").populate("division", "division_name").populate("department", "department_name");
         return res.status(200).json({valid: true, msg:"vehicle has been fetched", data:vehicle});
     }
     catch(err){

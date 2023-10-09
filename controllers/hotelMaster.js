@@ -87,7 +87,7 @@ const getHotels = async(req, res) => {
 const getSpecificHotel = async(req, res) => {
     try{
         const h_id = req.params.h_id;
-        const hotel = await HotelMaster.findOne({_id: h_id});
+        const hotel = await HotelMaster.findOne({_id: h_id}).populate("company", "company_name").populate("division", "division_name").populate("department", "department_name");
         return res.status(200).json({valid: true, msg:"hotel has been fetched", data:hotel});
     }
     catch(err){

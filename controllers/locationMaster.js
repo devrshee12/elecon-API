@@ -83,7 +83,7 @@ const getLocations = async(req, res) => {
 const getSpecificLocation = async(req, res) => {
     try{
         const l_id = req.params.l_id;
-        const location = await LocationMaster.findOne({_id: l_id});
+        const location = await LocationMaster.findOne({_id: l_id}).populate("company", "company_name").populate("division", "division_name").populate("department", "department_name");
         return res.status(200).json({valid: true, msg:"location has been fetched", data:location});
     }
     catch(err){

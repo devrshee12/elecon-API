@@ -5,7 +5,6 @@ const DriverMaster = require("../models/DriverMaster");
 
 
 
-
 const createDriver = async(req, res) => {
     try{    
         const {contractor, employee_id, first_name, middle_name, last_name, address, city, pincode, state, phone_no, emergancy_contact_person, emergancy_contact_no, birth_date, join_date, license_no, license_exp_date, releave_date} = req.body;
@@ -33,7 +32,7 @@ const getDrivers = async(req, res) => {
 const getSpecificDriver = async(req, res) => {
     try{
         const d_id = req.params.d_id;
-        const driver = await DriverMaster.findOne({_id: d_id});
+        const driver = await DriverMaster.findOne({_id: d_id}).populate("company", "company_name").populate("division", "division_name").populate("department", "department_name");
         return res.status(200).json({valid: true, msg:"driver has been fetched", data:driver});
     }
     catch(err){

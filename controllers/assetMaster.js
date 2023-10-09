@@ -83,7 +83,7 @@ const getAssets = async(req, res) => {
 const getSpecificAsset = async(req, res) => {
     try{
         const a_id = req.params.a_id;
-        const asset = await AssetMaster.findOne({_id: a_id});
+        const asset = await AssetMaster.findOne({_id: a_id}).populate("company", "company_name").populate("division", "division_name").populate("department", "department_name");
         return res.status(200).json({valid: true, msg:"asset has been fetched", data:asset});
     }
     catch(err){

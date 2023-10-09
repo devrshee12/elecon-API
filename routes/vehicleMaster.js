@@ -3,9 +3,9 @@ const router = express.Router()
 const {createVehicle, getVehicles, getSpecificVehicle, editVehicle, deleteVehicle} = require("../controllers/vehicleMaster");
 router.post('/', createVehicle)
 router.get('/getAll', getVehicles)
-router.get('/:a_id', getSpecificVehicle)
-router.post('/:a_id', editVehicle)
-router.delete('/:a_id', deleteVehicle)
+router.get('/:v_id', getSpecificVehicle)
+router.post('/:v_id', editVehicle)
+router.delete('/:v_id', deleteVehicle)
 
 
 
