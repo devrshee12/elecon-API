@@ -95,18 +95,17 @@ const deleteGrievance = async(req, res) => {
 const getAllGrievanceForHOD = async(req, res) => {
     try{
         const hod_id = req.params.hod_id
-        const emps = await Employee.find({hod_id: hod_id}, {_id: 1})
-        const filterEmps = emps.map((emp) => {
-            return emp._id
-        })
-        console.log(filterEmps);
-
-        const allG = await Grievance.find({
-            by_whom_id: {
-                $in: filterEmps
+        console.log(hod_id);
+        const gs = await Grievance.find({}).populate("by_whom_id");
+        console.log("gs is : ", gs)
+        const allG = gs.filter((el) => {
+            if((el.by_whom_id.hod_id).toString() === hod_id){
+                return true;
             }
-        }).populate("by_whom_id");
-
+            else{
+                return false;
+            }
+        })
         return res.status(200).json({valid: true, msg: "got all data", data: allG.reverse(), count: allG.length});
 
     }

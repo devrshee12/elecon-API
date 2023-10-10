@@ -83,6 +83,7 @@ const getAllDepartment = async(req, res) => {
                     t['department'] = department.department_name;
                     t['division'] = division.division_name;
                     t['company'] = company.company_name;
+                    t['_id'] = department._id;
                     result.push(t);
                 })
 
