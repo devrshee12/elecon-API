@@ -31,6 +31,26 @@ const updateSubDepartment = async(req, res) => {
     try{
         const s_id = req.params.s_id;
         const {sub_department_name, gl_code} = req.body;
+        const {department} = req.body;
+
+        const old_department = await Department.findOne({sub_department: {$in : [s_id]}})
+        old_department.sub_department = old_department.sub_department.filter((el) => {
+            if(el.toString() === s_id){
+                return false
+            }
+            else{
+                return true
+            }
+
+        })
+
+        await old_department.save()
+
+        const dept = await Department.findOne({_id: department})
+        dept.sub_department.push(s_id)
+        await dept.save()
+
+
         const subDepartment = await SubDepartment.findOne({_id: s_id});
         subDepartment.sub_department_name = sub_department_name;
         subDepartment.gl_code = gl_code;
@@ -48,7 +68,8 @@ const updateSubDepartment = async(req, res) => {
 const getSpecificSubDepartment = async(req, res) => {
     try{
         const s_id = req.params.s_id;
-        const subDepartment = await SubDepartment.findOne({_id: s_id});
+        
+        const subDepartment = await SubDepartment.findOne({_id: s_id})
         res.status(200).json({valid: true, msg:"sub department has been updated", data:subDepartment});
 
     }
@@ -101,6 +122,7 @@ const getAllSubDepartment = async(req, res) => {
                         t['division'] = division.division_name;
                         t['company'] = company.company_name;
                         t['gl_code'] = sub_department.gl_code
+                        t['_id'] = sub_department._id
                         result.push(t);
                     })
 

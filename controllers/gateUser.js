@@ -11,6 +11,7 @@ const getTodayVisitorForGateUser = async(req, res) => {
         start.setHours(0,0,0,0)
         var end = new Date()
         end.setHours(23, 59, 59, 999)
+        console.log("here in gateuser today data");
 
         const visitors = await Visitor.find({
             $and: [

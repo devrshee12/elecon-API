@@ -100,7 +100,7 @@ const editLocation = async(req, res) => {
         const {location_name, company, division, department} = req.body;
         
         const location = await LocationMaster.findOne({_id: l_id});
-        location.name = location_name 
+        location.location_name = location_name 
         location.company = company 
         location.division = division 
         location.department = department 

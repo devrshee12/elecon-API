@@ -55,6 +55,10 @@ const DriverMaster = new mongoose.Schema({
         type: String,
         default: ""
     },
+    email_id:{
+        type: String,
+        default: ""
+    },
     pincode:{
         type: String,
         default: ""

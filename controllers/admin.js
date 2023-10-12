@@ -50,6 +50,7 @@ const createEmployee = async(req, res) => {
 const updateEmployee = async(req, res) => {
     try{
         const _id = req.params.id;
+        console.log("update employee called")
         const { emp_name, role, gate_name, password, email, phoneNumber, hod_id} = req.body;
         const {emp_id} = req.body;
         const {company, division, department} = req.body;
@@ -69,6 +70,8 @@ const updateEmployee = async(req, res) => {
         emp.updated_by = "admin"
         
         await emp.save();
+
+        console.log("after updating the employee");
         res.status(200).json({valid: true, msg:"employee has been updated", data: emp});
     }
     catch(err){
