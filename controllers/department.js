@@ -47,6 +47,32 @@ const updateDepartment = async(req, res) => {
     try{
         const d_id = req.params.d_id;
         const {department_name} = req.body;
+        const {division_id} = req.body;
+
+        // const old_divsion_id;
+        const old_division = await Division.findOne({department: {$in: [d_id]}});
+        old_division.department = old_division.department.filter((el) => {
+            if(el.toString() === d_id){
+                return false
+            }
+            else{
+                return true;
+            }
+
+        })
+        console.log("old divsion");
+        console.log(old_division);
+        await old_division.save();
+
+        const division = await Division.findOne({_id:  division_id});
+        division.department.push(d_id);
+        await division.save();
+
+        console.log("new division");
+        console.log(division);
+
+
+
         const department = await Department.findOne({_id: d_id});
         department.department_name = department_name;
         department.updated_date = Date.now();
