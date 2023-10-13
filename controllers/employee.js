@@ -187,6 +187,29 @@ const countEmpBasedOnRole = async(req, res) => {
     }
 }
 
+const getHODEmps = async(req, res) => {
+    try{
+        const h_id = req.params.h_id;
+        const result = await Employee.find({});
+        // console.log(result)
+        const finalRes = result.filter((el) => {
+           if(el.hod_id && el.hod_id.toString() === h_id){
+            return true;
+           }
+           else{
+            return false;
+           }
+        })
+        return res.status(201).json({"valid": true, "msg": "data fetched", data: finalRes, total: finalRes.length});
+    }
+    catch(err){
+        console.log(err);
+        return res.status(500).json({valid: false, msg: "something went wrong"});
+    }
+
+
+}
+
 
 module.exports = {
     getAllEmployees,
@@ -194,5 +217,6 @@ module.exports = {
     forgotPasswordEmail,
     changePassword,
     getAllHOD,
-    countEmpBasedOnRole
+    countEmpBasedOnRole,
+    getHODEmps
 }

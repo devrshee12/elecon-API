@@ -345,6 +345,55 @@ const getCountOfGrievanceOfEmp = async(req, res) => {
 }
 
 
+const getCountOfGrievanceOfHOD = async(req, res) => {
+    try{
+        const emp_id = req.params.emp_id;
+        const gs = await Grievance.find({}).populate("by_whom_id");
+        console.log("gs is : ", gs)
+        const all = gs.filter((el) => {
+            if((el.by_whom_id.hod_id).toString() === emp_id){
+                return true;
+            }
+            else{
+                return false;
+            }
+        })
+        let pendingCount = 0;
+        let approvedCount = 0;
+        let declinedCount = 0;
+        all.forEach((el) => {
+            if(el.status === "pending"){
+                pendingCount += 1;
+            }
+            else if(el.status === "declined"){
+                declinedCount += 1;
+            }
+            else{
+                approvedCount += 1;
+            }
+        })
+
+        const pendingPer = parseInt((pendingCount/all.length)*100, 10);
+        const approvedPer = parseInt((approvedCount/all.length)*100, 10);
+        const declinedPer = parseInt((declinedCount/all.length)*100, 10);
+
+        return res.status(200).json({valid: true, msg: "got data", data: {
+            pendingCount,
+            approvedCount,
+            declinedCount,
+            pendingPer,
+            approvedPer,
+            declinedPer
+        }});
+
+
+    }
+    catch(err){
+        console.log(err);
+        res.status(500).json({valid: false, msg:"somthing went wrong"});
+    }
+}
+
 
 
 module.exports = {
@@ -360,5 +409,6 @@ module.exports = {
     countOfEmpGrievance,
     resolvedAnalysis,
     getDataForActivityGrievance,
-    getCountOfGrievanceOfEmp
+    getCountOfGrievanceOfEmp,
+    getCountOfGrievanceOfHOD
 }
