@@ -536,28 +536,35 @@ const getVisitorCountMonthVise = async(req, res) => {
 const getCountForEmp = async(req, res) => {
     try{
         const to_whom_id = req.params.to_whom_id;
+        const fromDate = new Date();
+        const toDate = new Date()
+        fromDate.setMonth(fromDate.getMonth() - 1)
+        const visitors = await Visitor.find({$and:[
+            {to_whom_id: to_whom_id},
+            {from_date: {$gte: fromDate}},
+            {toDate: {$lte: toDate}},
+        ]});
 
-        const visitors = await Visitor.find({to_whom_id: to_whom_id});
-
-        let countInVisitors = 0
-        let countOutVisitors = 0
+        let yetToVisit = 0
+        let visitSoFar = 0
 
         visitors.forEach((visitor) => {
-            if(visitor.in_time !== null && visitor.out_time === null){
-                countInVisitors += 1;
+            if(visitor.in_time !== null && visitor.out_time !== null){
+                visitSoFar += 1;
             }
-            else if(visitor.in_time !== null && visitor.out_time !== null){
-                countOutVisitors += 1;
+            else if(visitor.in_time === null && visitor.out_time === null){
+                yetToVisit += 1;
             }
         })
         
         
 
         return res.status(200).json({valid: true, msg: "got data", data: {
-            inCount: countInVisitors,
-            outCount: countOutVisitors,
+            yetToVisit,
+            visitSoFar,
             totalCount: visitors.length
         }});
+        // return res.status(200).json({valid: true, msg: "got data", data: visitors});
 
     }
     catch(err){

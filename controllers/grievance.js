@@ -395,6 +395,23 @@ const getCountOfGrievanceOfHOD = async(req, res) => {
 }
 
 
+const getPrintData = async(req, res) => {
+    try{
+        const result = await Grievance.find({}).populate({
+            path:"by_whom_id",
+            populate:{
+                path:"hod_id"
+            }
+        }) 
+
+        return res.status(200).json({valid: true, msg: "got data", data: result})
+    }
+    catch(err){
+        console.log(err);
+        res.status(500).json({valid: false, msg:"somthing went wrong"});
+    }
+}
+
 
 module.exports = {
     createGrievance,
@@ -410,5 +427,6 @@ module.exports = {
     resolvedAnalysis,
     getDataForActivityGrievance,
     getCountOfGrievanceOfEmp,
-    getCountOfGrievanceOfHOD
+    getCountOfGrievanceOfHOD,
+    getPrintData
 }
