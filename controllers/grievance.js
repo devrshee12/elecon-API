@@ -99,7 +99,7 @@ const getAllGrievanceForHOD = async(req, res) => {
         const gs = await Grievance.find({}).populate("by_whom_id");
         console.log("gs is : ", gs)
         const allG = gs.filter((el) => {
-            if((el.by_whom_id.hod_id).toString() === hod_id){
+            if((el.by_whom_id.hod_id).toString() === hod_id && el.is_escalated === false){
                 return true;
             }
             else{
@@ -413,6 +413,75 @@ const getPrintData = async(req, res) => {
 }
 
 
+const resendGrievance = async(req, res) => {
+    try{
+        const g_id = req.params.g_id;
+        const g = await Grievance.findOne({_id: g_id});
+        g.grievance_date = new Date();
+        g.is_resend = true
+        await g.save()
+        return res.status(200).json({valid: true, msg: "resend the grievance"})
+    }
+    catch(err){
+        console.log(err);
+        res.status(500).json({valid: false, msg:"somthing went wrong"});
+    }
+}
+
+const remindGrievance = async(req, res) => {
+    try{
+        const g_id = req.params.g_id
+        const g = await Grievance.findOne({_id: g_id}).populate({
+            path:"by_whom_id",
+            populate:{
+                path:"hod_id"
+            }
+        }) 
+        const fromEmail = g.by_whom_id.email
+        const toEmail = g.by_whom_id.email.email
+
+        const sendMail = require("../services/emailService")
+        sendMail({
+            from: fromEmail,
+            // to: visitor_email,
+            to: toEmail,
+            subject: 'Reminder Of My Grievance',
+            text: `Reminder Of My Grievance`,
+            html: require('../services/emailTemplate')({
+                        msg:`title is ${g.title} \n message is ${g.message}`
+
+                  })
+          }).then(() => {
+            return res.status(201).json({"valid": true, "msg": "email has been send to HOD For Reminder"});
+            
+          }).catch(err => {
+            return res.status(500).json({error: 'Error in email sending.'});
+        });
+    }
+    catch(err){
+        console.log(err);
+        res.status(500).json({valid: false, msg:"somthing went wrong"});
+    }
+
+}
+
+
+const escalateGrievance = async(req, res) => {
+    try{
+        const g_id = req.params.g_id
+        const g = await Grievance.findOne({_id: g_id}) 
+        g.grievance_date = new Date()
+        g.is_escalated = true;
+        await g.save()
+        return res.status(201).json({"valid": true, "msg": "Grievance has been escalated"});
+    }
+    catch(err){
+        console.log(err);
+        res.status(500).json({valid: false, msg:"somthing went wrong"});
+    }
+}
+
+
 module.exports = {
     createGrievance,
     getAllGrievanceForEmp,
@@ -428,5 +497,8 @@ module.exports = {
     getDataForActivityGrievance,
     getCountOfGrievanceOfEmp,
     getCountOfGrievanceOfHOD,
-    getPrintData
+    getPrintData,
+    resendGrievance,
+    remindGrievance,
+    escalateGrievance
 }

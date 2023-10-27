@@ -22,6 +22,14 @@ const Grievance = new mongoose.Schema({
     status:{
         type: String,
         default: "pending"
+    },
+    is_escalated:{
+        type:Boolean,
+        default: false
+    },
+    is_resend:{
+        type:Boolean,
+        default: false
     }
 })
 

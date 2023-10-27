@@ -188,13 +188,33 @@ const getTodayVisitorForEmp = async(req, res) => {
         var end = new Date()
         end.setHours(23, 59, 59, 999)
 
-        const visitors = await Visitor.find({
+        console.log("start : ", start)
+        console.log("end : ", end)
+
+        var visitors = await Visitor.find({
             $and: [
                 {to_whom_id: emp_id},
                 {to_date: {$gte: start}},
-                {from_date: {$lte: end}}
+                {from_date: {$gte: start}}
             ]
         })
+
+        // visitors = visitors.filter((el) => {
+            
+        //     // console.log("here is the condition : ");
+        //     // console.log(el.from_date)
+        //     // console.log(end);
+        //     // console.log((el.from_date <= end));
+        //     // console.log(el.name);
+        //     if(el.to_date >= start && el.from_date >= start){
+        //         return true;
+        //     }
+        //     else{
+        //         return false
+        //     }
+
+        // })
+        console.log("here in today emp in : ", visitors);
         res.status(200).json({valid: true, msg:"data has been fetched", data:visitors, count: visitors.length});
     }
     catch(err){
@@ -216,7 +236,7 @@ const getInTimeVisitorForEmp = async(req, res) => {
             $and: [
                 {to_whom_id: emp_id},
                 {to_date: {$gte: start}},
-                {from_date: {$lte: end}}
+                {from_date: {$gte: start}}
             ]
         })
 
@@ -251,7 +271,7 @@ const getOutTimeVisitorForEmp = async(req, res) => {
             $and: [
                 {to_whom_id: emp_id},
                 {to_date: {$gte: start}},
-                {from_date: {$lte: end}}
+                {from_date: {$gte: start}}
             ]
         })
 
@@ -287,7 +307,7 @@ const getRemainingVisitorForEmp = async(req, res) => {
             $and: [
                 {to_whom_id: emp_id},
                 {to_date: {$gte: start}},
-                {from_date: {$lte: end}}
+                {from_date: {$gte: start}}
             ]
         })
 
@@ -412,7 +432,7 @@ const getVisitorForDate = async(req, res) => {
         const visitors = await Visitor.find({
             $and : [
                 {to_date: {$gte: start}},
-                {from_date: {$lte: end}}
+                {from_date: {$gte: start}}
             ]
         }).populate("to_whom_id");
         res.status(200).json({valid: true, msg: "got visitor", data: visitors, count: visitors.length});

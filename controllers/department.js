@@ -2,6 +2,7 @@ const { default: mongoose } = require("mongoose");
 const Department = require("../models/Department");
 const Division = require("../models/Division");
 const Company = require("../models/Company");
+const Employee = require("../models/Employee");
 
 
 
@@ -11,8 +12,9 @@ const createDepartment = async(req, res) => {
     try{    
 
         const {department_name, subdepartmentId} = req.body;
+        const {hod_id} = req.body;
         const {division_id} = req.body;
-        const department = await Department({department_name, created_by: "admin", created_date: Date.now(), updated_by: "admin", updated_date: Date.now()});
+        const department = await Department({department_name, hod_id, created_by: "admin", created_date: Date.now(), updated_by: "admin", updated_date: Date.now()});
         if(subdepartmentId !== ""){
             department.sub_department.push(subdepartmentId);
         }
@@ -22,6 +24,10 @@ const createDepartment = async(req, res) => {
         division.department.push(department._id);
         division.updated_date = Date.now();
         await division.save();
+
+        const emp = await Employee.findOne({_id:hod_id});
+        emp.department = department._id
+        await emp.save();
         res.status(200).json({valid: true, msg:"department has been created", data:department});
     }
     catch(err){
@@ -47,6 +53,7 @@ const updateDepartment = async(req, res) => {
     try{
         const d_id = req.params.d_id;
         const {department_name} = req.body;
+        const {hod_id} = req.body;
         const {division_id} = req.body;
 
         // const old_divsion_id;
@@ -75,6 +82,7 @@ const updateDepartment = async(req, res) => {
 
         const department = await Department.findOne({_id: d_id});
         department.department_name = department_name;
+        department.hod_id = hod_id;
         department.updated_date = Date.now();
         await department.save();
         res.status(200).json({valid: true, msg:"department has been fetched", data:department});
@@ -98,7 +106,7 @@ const getAllDepartment = async(req, res) => {
                     model: "SubDepartment"
                 }
             }
-        });
+        }).populate("hod_id", "emp_name");
 
         const result = [];
         companies.forEach((company) => {
@@ -110,6 +118,8 @@ const getAllDepartment = async(req, res) => {
                     t['division'] = division.division_name;
                     t['company'] = company.company_name;
                     t['_id'] = department._id;
+                    t['hod_name'] = department.hod_id.emp_name;
+                    
                     result.push(t);
                 })
 

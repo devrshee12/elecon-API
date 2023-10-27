@@ -32,6 +32,10 @@ const Department = new mongoose.Schema({
         type: String,
         default: ""
     },
+    hod_id:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Employee"
+    },
     sub_department: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "SubDepartment"

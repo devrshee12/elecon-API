@@ -4,9 +4,12 @@ require("dotenv").config();
 const cors = require("cors");
 const cookieParser = require('cookie-parser');
 const jwt = require("jsonwebtoken");
+const fileUpload = require("express-fileupload")
 
 const connectDB = require("./db/connect");
 const PORT = 5000 || process.env.PORT;
+
+
 
 
 
@@ -19,6 +22,9 @@ const corsOptions = {
 }
 // console.log(corsOptions.origin);
 
+app.use(fileUpload({
+  useTempFiles: true
+}))
 app.use(cors(corsOptions));
 app.use(cookieParser());
 
@@ -74,6 +80,27 @@ app.use("/api/v1/vehicle", vehicle);
 app.use("/api/v1/location", location);
 app.use("/api/v1/workType", workType);
 app.use("/api/v1/driver", driver);
+
+
+// bill imports 
+
+const HotelBill = require("./routes/HotelBill")
+const SimCardBill = require("./routes/SimCardBill")
+const AssetBill = require("./routes/AssetBill")
+const modelBill = require("./routes/makeAndModelbill");
+const vehicleBill = require("./routes/VehicleBill");
+const manPowerBill = require("./routes/ManPowerBill");
+
+
+//bill routes 
+
+app.use("/api/v1/bill/hotel", HotelBill);
+app.use("/api/v1/bill/simcard", SimCardBill);
+app.use("/api/v1/bill/asset", AssetBill);
+app.use("/api/v1/bill/makeAndModel", modelBill);
+app.use("/api/v1/bill/vehicle", vehicleBill);
+app.use("/api/v1/bill/manPower", manPowerBill);
+
 
 
 

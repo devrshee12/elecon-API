@@ -211,6 +211,31 @@ const getHODEmps = async(req, res) => {
 }
 
 
+const getEmpByCDD = async(req, res) => {
+    try{
+        const {company, division, department} = req.body;
+        console.log(company, division, department);
+        console.log("here in get emp by cdd");
+        var emps = await Employee.find({})
+        emps = emps.filter((el) => {
+            if(el.company.toString() === company && el.department.toString() === department && el.division.toString() === division){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }) 
+        return res.status(201).json({"valid": true, "msg": "data fetched", data: emps, total: emps.length});
+
+
+    }
+    catch(err){
+        console.log(err);
+        return res.status(500).json({valid: false, msg: "something went wrong"});
+    }
+}
+
+
 module.exports = {
     getAllEmployees,
     getEmployee,
@@ -218,5 +243,6 @@ module.exports = {
     changePassword,
     getAllHOD,
     countEmpBasedOnRole,
-    getHODEmps
+    getHODEmps,
+    getEmpByCDD
 }
