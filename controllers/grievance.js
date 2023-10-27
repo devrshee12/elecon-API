@@ -437,8 +437,8 @@ const remindGrievance = async(req, res) => {
                 path:"hod_id"
             }
         }) 
-        const fromEmail = g.by_whom_id.email
-        const toEmail = g.by_whom_id.email.email
+        const fromEmail = g?.by_whom_id?.email
+        const toEmail = g?.by_whom_id.hod_id?.email
 
         const sendMail = require("../services/emailService")
         sendMail({
