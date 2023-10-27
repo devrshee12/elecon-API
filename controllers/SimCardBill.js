@@ -81,7 +81,7 @@ const getSimCardBills = async(req, res) => {
                     from: "employees", // Assuming the name of the department collection is "departments"
                     localField: "approved_by",
                     foreignField: "_id",
-                    as: "employee"
+                    as: "approved"
                 }
             },
             {
@@ -108,7 +108,7 @@ const getSimCardBills = async(req, res) => {
                     division: "$division.division_name",
                     department: "$department.department_name",
                     employee: "$employee.emp_name",
-                    approved_by: "$employee.emp_name",
+                    approved_by: "$approved.emp_name",
                 }
             }
         ])

@@ -39,6 +39,10 @@ const HotelBill = new mongoose.Schema({
         type: String,
         default: ""
     },
+    purpose:{
+        type: String,
+        default: ""
+    },
     requisition_date:{
         type: Date,
         default: ""
