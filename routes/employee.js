@@ -8,7 +8,7 @@ router.post('/forgotPasswordEmail', forgotPasswordEmail)
 router.post('/changePassword', changePassword)
 router.get('/analysis/countBasedOnRole', countEmpBasedOnRole)
 router.get('/analysis/hodEmps/:h_id', getHODEmps)
-router.post('/CDD/getAll', getEmpByCDD)
+router.post('/cdd/getAll', getEmpByCDD)
 
 
 module.exports = router

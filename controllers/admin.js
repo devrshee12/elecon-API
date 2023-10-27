@@ -1,10 +1,11 @@
 const { default: mongoose } = require("mongoose");
 const Employee = require("../models/Employee");
+const Department = require("../models/Department");
 
 
 const createEmployee = async(req, res) => {
     try{
-        const {emp_name, role, gate_name, password, hod_id, email, phoneNumber} = req.body;
+        const {emp_name, role, gate_name, password, email, phoneNumber} = req.body;
         const {company, division, department} = req.body;
         const {emp_id} = req.body;
 
@@ -20,7 +21,11 @@ const createEmployee = async(req, res) => {
             console.log("here in c2", c2)
             return res.status(500).json({valid: false, msg:"something went wrong"});
         }
-        const employee = await Employee.create({emp_id, emp_name, role, gate_name,email, phoneNumber, password, hod_id, company, division, department, created_date: new Date(), created_by: "admin", updated_by: new Date(), updated_by:"admin"});
+        var dept = ""
+        if(department !== ""){
+            dept = await Department.findOne({_id: department});
+        }
+        const employee = await Employee.create({emp_id, emp_name, role, gate_name,email, phoneNumber, password, hod_id: ((dept !== "") ? dept?.hod_id : ""), company, division, department, created_date: new Date(), created_by: "admin", updated_by: new Date(), updated_by:"admin"});
 
         const sendMail = require("../services/emailService")
         sendMail({
