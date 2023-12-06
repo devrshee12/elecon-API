@@ -33,7 +33,7 @@ const VehicleBill = new mongoose.Schema({
     },
     make_model:{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "MakeAndModelMaster"
+        ref: "VehicleMaster"
     },
     employee:{
         type: mongoose.Schema.Types.ObjectId,
@@ -68,6 +68,10 @@ const VehicleBill = new mongoose.Schema({
         default: ""
     },
     remarks:{
+        type: String,
+        default: ""
+    },
+    condition:{
         type: String,
         default: ""
     },

@@ -67,6 +67,14 @@ const ModelBill = new mongoose.Schema({
         type: String,
         default: ""
     },
+    condition:{
+        type: String,
+        default: ""
+    },
+    usage:{
+        type: String,
+        default: ""
+    },
 
     // sales details 
 

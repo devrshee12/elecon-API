@@ -3,6 +3,7 @@ const vehicleBill = require("../models/vehicleBill");
 const cloudinary = require("cloudinary").v2
 
 
+
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -22,21 +23,24 @@ const dateInPast = (firstDate, secondDate) => {
 const createVehicleBill = async(req, res) => {
     try{    
 
-        const {company, division, department, vehicle_type, make_model, employee, approved_by, driver} = req.body;
-        const {vehicle_no, purchase_date, issue_date, received_date, engine_no, chassis_no, remarks, usage} = req.body;
-        const {sale_date, sale_value, wdv_amount, sale_to, supplier} = req.body;
+        const {company, division, department, make_model, employee, approved_by, driver} = req.body;
+        const {vehicle_no, purchase_date, issue_date, received_date, engine_no, chassis_no, remarks, condition, usage} = req.body;
+        const {sale_date, sale_value, wdv_amount, sale_to} = req.body;
         const {payment_mode, payment_from_bank, cheque_date, cheque_no, cheque_to, transaction_date, transaction_no, transaction_status, payment_to_bank, amount} = req.body; 
         const {rc_book_details, insurance_details, puc_details} = req.files;
+        // const {file} = req.files;
         
-        const rc_book = await cloudinary.uploader.upload(rc_book_details.tempFilePath)
+        // console.log("here is temp file path : ", rc_book_details)
+        const rc_book = await cloudinary.uploader.upload(rc_book_details.tempFilePath);
         const insurance = await cloudinary.uploader.upload(insurance_details.tempFilePath)
         const puc = await cloudinary.uploader.upload(puc_details.tempFilePath)
+
+        // console.log(rc_book)
         
         const vBill = await vehicleBill.create({
             company,
             division,
             department,
-            vehicle_type,
             make_model,
             employee,
             approved_by,
@@ -48,12 +52,12 @@ const createVehicleBill = async(req, res) => {
             engine_no,
             chassis_no,
             remarks,
+            condition,
             usage,
             sale_date: new Date(sale_date),
             sale_value,
             wdv_amount,
             sale_to,
-            supplier,
             payment_mode,
             payment_from_bank,
             cheque_date: new Date(cheque_date),
@@ -74,7 +78,7 @@ const createVehicleBill = async(req, res) => {
 
         })
 
-        return res.status(200).json({valid: true, msg:"Vehicle bill has been created", data:vBill});
+        return res.status(200).json({valid: true, msg:"Vehicle bill has been created"});
     }
     catch(err){
         console.log(err);
@@ -84,12 +88,227 @@ const createVehicleBill = async(req, res) => {
 
 const getVehicleBills = async(req, res) => {
     try{
-        const vBills = await vehicleBill.find({});
+        // const vBills = await vehicleBill.find({});
+        const vBills = await vehicleBill.aggregate([
+            {
+              $lookup: {
+                from: "vehiclemasters", // Replace with the actual collection name for AssetMaster
+                localField: "make_model",
+                foreignField: "_id",
+                as: "make_model",
+              },
+            },
+            {
+              $lookup: {
+                from: "employees", // Replace with the actual collection name for VendorMaster
+                localField: "employee",
+                foreignField: "_id",
+                as: "employee",
+              },
+            },
+            {
+              $lookup: {
+                from: "employees", // Replace with the actual collection name for VendorMaster
+                localField: "approved_by",
+                foreignField: "_id",
+                as: "approved_by",
+              },
+            },
+            {
+              $lookup: {
+                from: "drivermasters", // Replace with the actual collection name for VendorMaster
+                localField: "driver",
+                foreignField: "_id",
+                as: "driver",
+              },
+            },
+            {
+              $lookup: {
+                from: "companies", // Replace with the actual collection name for Company
+                localField: "company",
+                foreignField: "_id",
+                as: "company",
+              },
+            },
+            {
+              $lookup: {
+                from: "divisions", // Replace with the actual collection name for Division
+                localField: "division",
+                foreignField: "_id",
+                as: "division",
+              },
+            },
+            {
+              $lookup: {
+                from: "departments", // Replace with the actual collection name for Department
+                localField: "department",
+                foreignField: "_id",
+                as: "department",
+              },
+            },
+            {
+              $project: {
+                created_date: 1,
+                created_by: 1,
+                updated_date: 1,
+                updated_by: 1,
+                make_model: { $arrayElemAt: ["$make_model.vehicle_name", 0] },
+                employee: { $arrayElemAt: ["$employee.emp_name", 0] },
+                approved_by: { $arrayElemAt: ["$approved_by.emp_name", 0] },
+                driver: { $arrayElemAt: ["$driver.first_name", 0] },
+                vehicle_no: 1,
+                purchase_date: 1,
+                issue_date: 1,
+                received_date: 1,
+                engine_no: 1,
+                asset_no: 1,
+                chassis_no: 1,
+                remarks: 1,
+                condition: 1,
+                usage: 1,
+                sale_date: 1,
+                sale_value: 1,
+                wdv_amount: 1,
+                sale_to: 1,
+
+                payment_mode: 1,
+                payment_from_bank: 1,
+                cheque_date: 1,
+                cheque_no: 1,
+                transaction_date: 1,
+                transaction_no: 1,
+                transaction_status: 1,
+                payment_to_bank: 1,
+                amount: 1,
+                
+                company: { $arrayElemAt: ["$company.company_name", 0] },
+                division: { $arrayElemAt: ["$division.division_name", 0] },
+                department: { $arrayElemAt: ["$department.department_name", 0] },
+                // Add other fields as needed
+              },
+            },
+          ]);
+
         return res.status(200).json({valid: true, msg:"vehicle bill has been fetched", data: vBills, count: vBills.length});
     }
     catch(err){
         console.log(err);
         res.status(500).json({valid: false, msg:"something went wrong"});
+    }
+}
+
+const getAllBillsForSpecific = async(req, res) => {
+    try{
+      const vb_id = req.params.vb_id;
+      const vBills = await vehicleBill.aggregate([
+        {
+          $lookup: {
+            from: "vehiclemasters", // Replace with the actual collection name for AssetMaster
+            localField: "make_model",
+            foreignField: "_id",
+            as: "make_model",
+          },
+        },
+        {
+          $lookup: {
+            from: "employees", // Replace with the actual collection name for VendorMaster
+            localField: "approved_by",
+            foreignField: "_id",
+            as: "approved_by",
+          },
+        },
+        {
+          $lookup: {
+            from: "drivermasters", // Replace with the actual collection name for VendorMaster
+            localField: "driver",
+            foreignField: "_id",
+            as: "driver",
+          },
+        },
+        {
+          $lookup: {
+            from: "companies", // Replace with the actual collection name for Company
+            localField: "company",
+            foreignField: "_id",
+            as: "company",
+          },
+        },
+        {
+          $lookup: {
+            from: "divisions", // Replace with the actual collection name for Division
+            localField: "division",
+            foreignField: "_id",
+            as: "division",
+          },
+        },
+        {
+          $lookup: {
+            from: "departments", // Replace with the actual collection name for Department
+            localField: "department",
+            foreignField: "_id",
+            as: "department",
+          },
+        },
+        {
+          $project: {
+            created_date: 1,
+            created_by: 1,
+            updated_date: 1,
+            updated_by: 1,
+            make_model: { $arrayElemAt: ["$make_model.vehicle_name", 0] },
+            // employee: { $arrayElemAt: ["$employee.emp_name", 0] },
+            employee: 1,
+            approved_by: { $arrayElemAt: ["$approved_by.emp_name", 0] },
+            driver: { $arrayElemAt: ["$driver.first_name", 0] },
+            vehicle_no: 1,
+            purchase_date: 1,
+            issue_date: 1,
+            received_date: 1,
+            engine_no: 1,
+            asset_no: 1,
+            chassis_no: 1,
+            remarks: 1,
+            condition: 1,
+            usage: 1,
+            sale_date: 1,
+            sale_value: 1,
+            wdv_amount: 1,
+            sale_to: 1,
+
+            payment_mode: 1,
+            payment_from_bank: 1,
+            cheque_date: 1,
+            cheque_no: 1,
+            transaction_date: 1,
+            transaction_no: 1,
+            transaction_status: 1,
+            payment_to_bank: 1,
+            amount: 1,
+            
+            company: { $arrayElemAt: ["$company.company_name", 0] },
+            division: { $arrayElemAt: ["$division.division_name", 0] },
+            department: { $arrayElemAt: ["$department.department_name", 0] },
+            // Add other fields as needed
+          },
+        },
+      ]);
+
+
+      const result = vBills.filter((el) => {
+        if(el.employee.toString() === vb_id){
+          return true
+        }
+        else{
+          return false
+        }
+        
+      })
+
+      return res.status(200).json({valid: true, msg:"vehicle bill has been fetched", data: result, count: result.length});
+    }
+    catch(err){
+      console.log(err);
+      res.status(500).json({valid: false, msg:"something went wrong"});
     }
 }
 
@@ -194,5 +413,6 @@ module.exports = {
     getVehicleBills,
     editVehicleBill,
     getSpecificVehicleBill,
-    deleteVehicleBill
+    deleteVehicleBill,
+    getAllBillsForSpecific
 }

@@ -215,10 +215,11 @@ const getEmpByCDD = async(req, res) => {
     try{
         const {company, division, department} = req.body;
         console.log(company, division, department);
-        console.log("here in get emp by cdd");
+        // console.log("here in get emp by cdd");
         var emps = await Employee.find({})
+        // console.log(emps);
         emps = emps.filter((el) => {
-            if(el.company.toString() === company && el.department.toString() === department && el.division.toString() === division){
+            if((el.company && el?.company.toString() === company) && (el.department && el?.department.toString() === department) && (el.division && el?.division.toString() === division)){
                 return true;
             }
             else{

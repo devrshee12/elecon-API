@@ -32,8 +32,8 @@ const ManPowerBill = new mongoose.Schema({
         ref: "WorktypeMaster"
     },
     contractor:{
-        type: String,
-        default: ""
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "VendorMaster"
     },
     month_year:{
         type: String,
@@ -48,7 +48,7 @@ const ManPowerBill = new mongoose.Schema({
         default: ""
     },
     bill_no:{
-        type: Date,
+        type: String,
         default: ""
     },
     bill_date:{

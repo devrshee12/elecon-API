@@ -47,7 +47,82 @@ const createManPowerBill = async(req, res) => {
 
 const getManPowerBills = async(req, res) => {
     try{
-        const manPowerBills = await ManPowerBill.find({});
+        // const manPowerBills = await ManPowerBill.find({});
+
+        const manPowerBills = await ManPowerBill.aggregate([
+            {
+              $lookup: {
+                from: "worktypemasters", // Replace with the actual collection name for AssetMaster
+                localField: "work_type",
+                foreignField: "_id",
+                as: "work_type",
+              },
+            },
+            {
+              $lookup: {
+                from: "locationmasters", // Replace with the actual collection name for VendorMaster
+                localField: "location",
+                foreignField: "_id",
+                as: "location",
+              },
+            },
+            {
+              $lookup: {
+                from: "vendormasters", // Replace with the actual collection name for VendorMaster
+                localField: "contractor",
+                foreignField: "_id",
+                as: "contractor",
+              },
+            },
+            {
+              $lookup: {
+                from: "companies", // Replace with the actual collection name for Company
+                localField: "company",
+                foreignField: "_id",
+                as: "company",
+              },
+            },
+            {
+              $lookup: {
+                from: "divisions", // Replace with the actual collection name for Division
+                localField: "division",
+                foreignField: "_id",
+                as: "division",
+              },
+            },
+            {
+              $lookup: {
+                from: "departments", // Replace with the actual collection name for Department
+                localField: "department",
+                foreignField: "_id",
+                as: "department",
+              },
+            },
+            {
+              $project: {
+                created_date: 1,
+                created_by: 1,
+                updated_date: 1,
+                updated_by: 1,
+                work_type: { $arrayElemAt: ["$work_type.work_type", 0] },
+                location: { $arrayElemAt: ["$location.location_name", 0] },
+                contractor: { $arrayElemAt: ["$contractor.name", 0] },
+                month_year: 1,
+                no_of_employee: 1,
+                bill_no: 1,
+                bill_date: 1,
+                bill_amount: 1,
+                sgst: 1,
+                cgst: 1,
+                igst: 1,
+                total_amount: 1,
+                company: { $arrayElemAt: ["$company.company_name", 0] },
+                division: { $arrayElemAt: ["$division.division_name", 0] },
+                department: { $arrayElemAt: ["$department.department_name", 0] },
+                // Add other fields as needed
+              },
+            },
+          ]);
         return res.status(200).json({valid: true, msg:"Man Power bill has been fetched", data: manPowerBills, count: manPowerBills.length});
     }
     catch(err){

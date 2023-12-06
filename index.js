@@ -102,6 +102,27 @@ app.use("/api/v1/bill/vehicle", vehicleBill);
 app.use("/api/v1/bill/manPower", manPowerBill);
 
 
+// analysis 
+
+const masterAnalysis = require("./routes/masterAnanlysis");
+const transactionAnalysis = require("./routes/transactionAnalysis");
+
+app.use("/api/v1/master/analysis", masterAnalysis);
+app.use("/api/v1/transaction/analysis", transactionAnalysis);
+
+
+
+
+
+// requisition module
+
+
+const requisition = require("./routes/requisition")
+
+app.use("/api/v1/requisition", requisition)
+
+
+
 
 
 
