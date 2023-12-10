@@ -61,11 +61,51 @@ const getHotelBills = async(req, res) => {
     }
 }
 
+
+const getSpecificEmpHotelBills = async(req, res) => {
+    try{
+        const emp_id = req.params.emp_id;
+        const hotelBills = await HotelBill.find({booked_by: emp_id})
+        .populate("company", "company_name") // Replace "company_name" with the actual field name in your Company model
+        .populate("division", "division_name") // Replace "division_name" with the actual field name in your Division model
+        .populate("department", "department_name") // Replace "department_name" with the actual field name in your Department model
+        .populate("booked_by", "emp_name") // Replace "employee_name" with the actual field name in your Employee model
+        .populate("hotel", "name") 
+
+        // hotelBills = hotelBills.map((el) => {
+        //     return {...el, company: el.company.company_name, division: el.division.division_name, department: el.department.department_name, booked_by: el.booked_by.emp_name, hotel: el.hotel.name}
+
+        // })
+
+        const result = hotelBills.map((el) => {
+            const t = el.toObject();
+            return {...t, company: t.company.company_name, division: t.division.division_name, department: t.department.department_name, booked_by: t.booked_by.emp_name, hotel: t.hotel.name}
+        })
+        
+        
+        return res.status(200).json({valid: true, msg:"hotel bill has been fetched", data: result, count: result.length});
+    }
+    catch(err){
+        console.log(err);
+        res.status(500).json({valid: false, msg:"something went wrong"});
+    }
+}
+
 const getSpecificHotelBill = async(req, res) => {
     try{
         const hb_id = req.params.hb_id;
-        const hotelBill = await HotelBill.findOne({_id: hb_id}).populate("company", "company_name").populate("division", "division_name").populate("department", "department_name").populate("booked_by", "emp_name").populate("hotel", "name");
-        return res.status(200).json({valid: true, msg:"specific hotel bill has been fetched", data: hotelBill});
+        const hotelBill = await HotelBill.findOne({_id: hb_id})
+        .populate("company", "company_name") // Replace "company_name" with the actual field name in your Company model
+        .populate("division", "division_name") // Replace "division_name" with the actual field name in your Division model
+        .populate("department", "department_name") // Replace "department_name" with the actual field name in your Department model
+        .populate("booked_by", "emp_name") // Replace "employee_name" with the actual field name in your Employee model
+        .populate("hotel", "name")
+
+        // const result = {...hotelBill, company: hotelBill.company.company_name, division: hotelBill.division.division_name, department: hotelBill.department.department_name, booked_by: hotelBill.booked_by.emp_name, hotel: hotelBill.hotel.name}
+        
+        
+        
+        return res.status(200).json({valid: true, msg:"hotel bill has been fetched", data: hotelBill});
     }
     catch(err){
         console.log(err);
@@ -131,5 +171,6 @@ module.exports = {
     getHotelBills,
     editHotelBill,
     getSpecificHotelBill,
-    deleteHotelBill
+    deleteHotelBill,
+    getSpecificEmpHotelBills
 }

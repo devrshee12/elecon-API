@@ -27,7 +27,10 @@ const Requisition = new mongoose.Schema({
         type: String,
         default: "",
     },
-
+    title: {
+        type: String,
+        default: "",
+    },
     activity:{
         type:String,
         default: ""
@@ -48,6 +51,19 @@ const Requisition = new mongoose.Schema({
     //     type:String,
     //     default:""
     // },
+
+    status:{
+        type: String,
+        default: "pending"
+    },
+    is_escalated:{
+        type: Boolean,
+        default: false
+    },
+    is_resend: {
+        type: Boolean,
+        default: false
+    },
     company: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Company"

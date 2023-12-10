@@ -10,8 +10,8 @@ const Requisition = require("../models/Requisition");
 const createRequisition = async(req, res) => {
     try{
         const {company, division, department, employee} = req.body;
-        const {activity, problem_desc, requisition_date} = req.body;
-        const requisition = await Requisition.create({company, division, department, employee, activity, problem_desc, requisition_date: new Date(requisition_date), created_date: Date.now(), created_by:"admin", updated_by:"admin", updated_date:Date.now()})
+        const {title, activity, problem_desc} = req.body;
+        const requisition = await Requisition.create({company, division, department, employee, title, activity, problem_desc, requisition_date: Date.now(), created_date: Date.now(), created_by:"admin", updated_by:"admin", updated_date:Date.now()})
 
         return res.status(200).json({valid: true, msg:"requisition has been created", data: requisition});
     }
@@ -65,9 +65,13 @@ const getAllRequisitions = async(req, res) => {
                 created_by: 1,
                 updated_date: 1,
                 updated_by: 1,
+                title: 1,
                 activity: 1,
                 problem_desc: 1,
                 requisition_date: 1,
+                status: 1,
+                is_escalated: 1,
+                is_resend: 1,
                 employee: { $arrayElemAt: ["$employee.emp_name", 0] },
                 company: { $arrayElemAt: ["$company.company_name", 0] },
                 division: { $arrayElemAt: ["$division.division_name", 0] },
@@ -122,10 +126,15 @@ const getAllRequisitionsForSpecific = async(req, res) => {
                 created_by: 1,
                 updated_date: 1,
                 updated_by: 1,
+                title: 1,
                 activity: 1,
                 problem_desc: 1,
                 requisition_date: 1,
                 employee: 1,
+                status: 1,
+                is_escalated: 1,
+                is_resend: 1,
+
                 company: { $arrayElemAt: ["$company.company_name", 0] },
                 division: { $arrayElemAt: ["$division.division_name", 0] },
                 department: { $arrayElemAt: ["$department.department_name", 0] },
@@ -159,13 +168,14 @@ const editRequisition = async(req, res) => {
     try{
         const {r_id} = req.params;
         const {company, division, department, employee} = req.body;
-        const {activity, problem_desc, requisition_date} = req.body;
+        const {title, activity, problem_desc, requisition_date} = req.body;
         
         const requisition = await Requisition.findOne({_id: r_id})
         requisition.company = company
         requisition.division = division
         requisition.department = department
         requisition.employee = employee
+        requisition.title = title
         requisition.activity = activity
         requisition.problem_desc = problem_desc
         requisition.requisition_date = new Date(requisition_date)
@@ -183,6 +193,99 @@ const editRequisition = async(req, res) => {
 }
 
 
+const changeStatus = async(req, res) => {
+    try{
+      const r_id = req.params.r_id;
+      const {status} = req.body;
+      const r = await Requisition.findOne({_id: r_id})
+      r.status = status;
+      await r.save()
+      return res.status(200).json({valid: true, msg:"requisition has been updated", data: r});
+
+    }
+    catch(err){
+      console.log(err);
+      res.status(500).json({valid: false, msg:"something went wrong"});
+    }
+}
+
+
+
+
+const escalateRequisition = async(req, res) => {
+  try{
+    const r_id = req.params.r_id;
+    const r = await Requisition.findOne({_id: r_id})
+    r.requisition_date = Date.now()
+    r.updated_date = Date.now()
+    r.created_date = Date.now()
+    r.is_escalated = true
+    await r.save()
+    return res.status(200).json({valid: true, msg:"requisition has been escalate", data: r});
+  }
+  catch(err){
+    console.log(err);
+    res.status(500).json({valid: false, msg:"something went wrong"});
+  }
+}
+
+const resendRequisition = async(req, res) => {
+  try{
+    const r_id = req.params.r_id
+    // console.log(typeof r_id);
+    const r = await Requisition.findOne({_id: r_id})
+    r.is_resend = true;
+    r.requisition_date = Date.now()
+    r.created_date = Date.now()
+    r.updated_date = Date.now()
+    await r.save();
+    return res.status(200).json({valid: true, msg:"requisition has been resend"});
+
+  }
+  catch(err){
+    console.log(err);
+    res.status(500).json({valid: false, msg:"something went wrong"});
+  }
+}
+
+const remindRequisition = async(req, res) => {
+  try{
+      const r_id = req.params.r_id
+      const r = await Requisition.findOne({_id: r_id}).populate({
+          path:"employee",
+          populate:{
+              path:"hod_id"
+          }
+      }) 
+      const fromEmail = r?.employee?.email
+      const toEmail = r?.employee.hod_id?.email
+
+      const sendMail = require("../services/emailService")
+      sendMail({
+          from: fromEmail,
+          // to: visitor_email,
+          to: toEmail,
+          subject: 'Reminder Of My Requisition',
+          text: `Reminder Of My Requisition`,
+          html: require('../services/emailTemplate')({
+                      msg:`title is ${r.title} \n message is ${r.problem_desc}`
+
+                })
+        }).then(() => {
+          return res.status(201).json({"valid": true, "msg": "email has been send to HOD For Reminder"});
+          
+        }).catch(err => {
+          return res.status(500).json({error: 'Error in email sending.'});
+      });
+  }
+  catch(err){
+      console.log(err);
+      res.status(500).json({valid: false, msg:"somthing went wrong"});
+  }
+
+}
+
+
 const deleteRequisition = async(req, res) => {
     try{
         const {r_id} = req.params;
@@ -196,6 +299,96 @@ const deleteRequisition = async(req, res) => {
 }
 
 
+const getAllEscalatedRequisitions = async(req, res) => {
+  try{
+    const requisitions = await Requisition.aggregate([
+      {
+        $lookup: {
+          from: "companies", // Replace with the actual collection name for Company
+          localField: "company",
+          foreignField: "_id",
+          as: "company",
+        },
+      },
+      {
+        $lookup: {
+          from: "divisions", // Replace with the actual collection name for Division
+          localField: "division",
+          foreignField: "_id",
+          as: "division",
+        },
+      },
+      {
+        $lookup: {
+          from: "departments", // Replace with the actual collection name for Department
+          localField: "department",
+          foreignField: "_id",
+          as: "department",
+        },
+      },
+      {
+        $match: {
+          is_escalated: true
+        }
+      },
+      {
+        $project: {
+          created_date: 1,
+          created_by: 1,
+          updated_date: 1,
+          updated_by: 1,
+          title: 1,
+          activity: 1,
+          problem_desc: 1,
+          requisition_date: 1,
+          employee: 1,
+          status: 1,
+          is_escalated: 1,
+          is_resend: 1,
+          company: { $arrayElemAt: ["$company.company_name", 0] },
+          division: { $arrayElemAt: ["$division.division_name", 0] },
+          department: { $arrayElemAt: ["$department.department_name", 0] },
+          // Add other fields as needed
+          },
+      },
+    ]);
+    return res.status(200).json({valid: true, msg:"Escalated requisition has been fetched", data: requisitions});
+  }
+  catch(err){
+    console.log(err);
+    res.status(500).json({valid: false, msg:"something went wrong"});
+  }
+}
+
+
+const getRequisitionForHod = async(req, res) => {
+  try{
+    // console.log(req.params)
+    const hod_id = req.params.hod_id;
+    const r = await Requisition.find({}).populate("employee", "emp_name hod_id email").populate("company", "company_name").populate("division", "division_name").populate("department", "department_name");
+    // console.log(r);
+
+    const all_r = r.filter((el) => {
+      if((el.employee.hod_id).toString() === hod_id && el.is_escalated === false){
+        return true
+      }
+      else{
+        return false
+      }
+    })
+
+    
+
+    
+
+    return res.status(200).json({valid: true, msg: "got all data", data: all_r.reverse(), count: all_r.length});
+
+  } 
+  catch(err){
+    console.log(err);
+    res.status(500).json({valid: false, msg:"something went wrong"});
+  }
+}
 
 
 module.exports = {
@@ -203,5 +396,11 @@ module.exports = {
     getAllRequisitions,
     getAllRequisitionsForSpecific,
     editRequisition,
-    deleteRequisition
+    deleteRequisition,
+    changeStatus,
+    escalateRequisition,
+    resendRequisition,
+    remindRequisition,
+    getAllEscalatedRequisitions,
+    getRequisitionForHod
 }
