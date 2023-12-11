@@ -56,6 +56,14 @@ const Requisition = new mongoose.Schema({
         type: String,
         default: "pending"
     },
+    approval_remarks: {
+        type: String,
+        default: ""
+    },
+    closure_remarks:{
+        type: String,
+        default: ""
+    },
     is_escalated:{
         type: Boolean,
         default: false

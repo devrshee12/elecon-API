@@ -72,8 +72,11 @@ const getAllRequisitions = async(req, res) => {
                 status: 1,
                 is_escalated: 1,
                 is_resend: 1,
-                employee: { $arrayElemAt: ["$employee.emp_name", 0] },
+                approval_remarks: 1,
+                closure_remarks: 1,
                 company: { $arrayElemAt: ["$company.company_name", 0] },
+                emp_name: { $arrayElemAt: ["$employee.emp_name", 0] },
+                emp_email: { $arrayElemAt: ["$employee.email", 0] },
                 division: { $arrayElemAt: ["$division.division_name", 0] },
                 department: { $arrayElemAt: ["$department.department_name", 0] },
                 // Add other fields as needed
@@ -153,7 +156,7 @@ const getAllRequisitionsForSpecific = async(req, res) => {
 
           })
 
-          return res.status(200).json({valid: true, msg:"requisition has been fetched", data: result});
+          return res.status(200).json({valid: true, msg:"requisition has been fetched", data: result.reverse()});
 
     }
     catch(err){
@@ -327,6 +330,14 @@ const getAllEscalatedRequisitions = async(req, res) => {
         },
       },
       {
+        $lookup: {
+          from: "employees", // Replace with the actual collection name for Department
+          localField: "employee",
+          foreignField: "_id",
+          as: "employee",
+        },
+      },
+      {
         $match: {
           is_escalated: true
         }
@@ -341,13 +352,16 @@ const getAllEscalatedRequisitions = async(req, res) => {
           activity: 1,
           problem_desc: 1,
           requisition_date: 1,
-          employee: 1,
+          // employee: 1,
           status: 1,
           is_escalated: 1,
           is_resend: 1,
           company: { $arrayElemAt: ["$company.company_name", 0] },
           division: { $arrayElemAt: ["$division.division_name", 0] },
           department: { $arrayElemAt: ["$department.department_name", 0] },
+          emp_name: { $arrayElemAt: ["$employee.emp_name", 0] },
+          emp_email: { $arrayElemAt: ["$employee.email", 0] },
+           
           // Add other fields as needed
           },
       },
@@ -391,6 +405,122 @@ const getRequisitionForHod = async(req, res) => {
 }
 
 
+const approveRequisition = async(req, res) => {
+  try{
+    const r_id = req.params.r_id;
+    const {remarks} = req.body;
+    const r = await Requisition.findOne({_id: r_id});
+    r.approval_remarks = remarks;
+    r.status = "approved"
+    r.updated_date = Date.now()
+    await r.save()
+    return res.status(200).json({valid: true, msg: "Requisition Approved"});
+  }
+  catch(err){
+    console.log(err);
+    res.status(500).json({valid: false, msg:"something went wrong"});
+  }
+}
+
+
+const closeRequisition = async(req, res) => {
+  try{
+    const r_id = req.params.r_id;
+    const {remarks} = req.body;
+    console.log("here in close remarks");
+    const r = await Requisition.findOne({_id: r_id});
+    r.closure_remarks = remarks;
+    r.status = "declined"
+    r.updated_date = Date.now()
+    await r.save()
+    return res.status(200).json({valid: true, msg: "Requisition Declined"});
+  }
+  catch(err){
+    console.log(err);
+    res.status(500).json({valid: false, msg:"something went wrong"});
+  }
+}
+
+
+const getSpecificRequisition = async(req, res) => {
+  try{  
+    const r_id = req.params.r_id;
+    const requisitions = await Requisition.aggregate([
+      {
+        $lookup: {
+          from: "companies", // Replace with the actual collection name for Company
+          localField: "company",
+          foreignField: "_id",
+          as: "company",
+        },
+      },
+      {
+        $lookup: {
+          from: "divisions", // Replace with the actual collection name for Division
+          localField: "division",
+          foreignField: "_id",
+          as: "division",
+        },
+      },
+      {
+        $lookup: {
+          from: "departments", // Replace with the actual collection name for Department
+          localField: "department",
+          foreignField: "_id",
+          as: "department",
+        },
+      },
+      {
+        $lookup: {
+          from: "employees", // Replace with the actual collection name for Department
+          localField: "employee",
+          foreignField: "_id",
+          as: "employee",
+        },
+      },
+      {
+        $project: {
+          title: 1,
+          activity: 1,
+          problem_desc: 1,
+          requisition_date: 1,
+          // employee: 1,
+          status: 1,
+          is_escalated: 1,
+          is_resend: 1,
+          approval_remarks: 1,
+          closure_remarks: 1,
+          company: { $arrayElemAt: ["$company.company_name", 0] },
+          division: { $arrayElemAt: ["$division.division_name", 0] },
+          department: { $arrayElemAt: ["$department.department_name", 0] },
+          emp_name: { $arrayElemAt: ["$employee.emp_name", 0] },
+          emp_email: { $arrayElemAt: ["$employee.email", 0] },
+           
+          // Add other fields as needed
+          },
+      },
+    ]);
+
+    const result = requisitions.filter((el) => {
+      if(el._id.toString() === r_id){
+        return true
+      }
+      else{
+        return false
+      }
+    })
+    return res.status(200).json({valid: true, msg:"Escalated requisition has been fetched", data: result[0]});
+
+
+  }
+  catch(err){
+    console.log(err);
+    res.status(500).json({valid: false, msg:"something went wrong"});
+
+  }
+}
+
+
 module.exports = {
     createRequisition,
     getAllRequisitions,
@@ -402,5 +532,8 @@ module.exports = {
     resendRequisition,
     remindRequisition,
     getAllEscalatedRequisitions,
-    getRequisitionForHod
+    getRequisitionForHod,
+    approveRequisition,
+    closeRequisition,
+    getSpecificRequisition
 }
