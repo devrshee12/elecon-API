@@ -3,6 +3,30 @@ const mongoose = require("mongoose");
 
 
 const Grievance = new mongoose.Schema({
+    created_date: {
+        type: Date,
+        default: new Date()
+    },
+    created_by: {
+        type: String,
+        default: "",
+    },
+    updated_date: {
+        type: Date,
+        default: new Date()
+    },
+    updated_by: {
+        type: String,
+        default: "",
+    },
+    deleted_date: {
+        type: Date,
+        default: ""
+    },
+    deleted_by: {
+        type: String,
+        default: "",
+    },
     title: {
         type: String,
         default: ""
@@ -10,6 +34,10 @@ const Grievance = new mongoose.Schema({
     message: {
         type: String,
         default:""
+    },
+    grievance_type: {
+        type: String,
+        default: ""
     },
     by_whom_id: {
         type: mongoose.Schema.Types.ObjectId,
@@ -30,7 +58,16 @@ const Grievance = new mongoose.Schema({
     is_resend:{
         type:Boolean,
         default: false
-    }
+    },
+    approval_remarks: {
+        type: String,
+        default: ""
+    },
+    closure_remarks:{
+        type: String,
+        default: ""
+    },
+
 })
 
 

@@ -6,8 +6,8 @@ const Employee = require("../models/Employee");
 const createGrievance = async(req, res) => {
     try{
         const emp_id = req.params.emp_id;
-        const {title, message} = req.body;
-        const grievance = await Grievance.create({title, message, by_whom_id: emp_id, grievance_date: new Date()});
+        const {title, message, grievance_type} = req.body;
+        const grievance = await Grievance.create({title, message, grievance_type, by_whom_id: emp_id, grievance_date: new Date(), created_by: "employee", created_date: Date.now(), updated_by: "employee", updated_date: Date.now()});
 
         return res.status(200).json({valid: true, msg: "Grievance has been created", data: grievance});
     }
@@ -34,6 +34,7 @@ const getAllGrievanceForEmp = async(req, res) => {
     try{
         const emp_id = req.params.emp_id
         const result = await Grievance.find({by_whom_id: emp_id});
+        console.log("this API called ", result);
         return res.status(200).json({valid: true, msg: "all grievances has been fetched", data: result.reverse(), count: result.length});
     }
     catch(err){
@@ -47,10 +48,11 @@ const getAllGrievanceForEmp = async(req, res) => {
 const updateGrievance = async(req, res) => {
     try{
         const g_id = req.params.g_id;
-        const {title, message} = req.body;
+        const {title, message, grievance_type} = req.body;
         const g = await Grievance.findOne({_id: g_id});
         g.title = title;
         g.message = message;
+        g.grievance_type = grievance_type
         await g.save()
         return res.status(200).json({valid: true, msg: "grievance has been updated", data: g});
 
@@ -75,6 +77,48 @@ const updateStatus = async(req, res) => {
     catch(err){
         console.log(err);
         res.status(500).json({valid: false, msg:"somthing went wrong"});
+    }
+}
+
+
+// new controllers 
+
+
+const approveGrievance = async(req, res) => {
+    try{
+        const g_id = req.params.g_id;
+        const {remarks} = req.body;
+        const g = await Grievance.findOne({_id: g_id});
+        g.status = "approved"
+        g.approval_remarks = remarks
+        g.updated_date = Date.now()
+        await g.save()
+        return res.status(200).json({valid: true, msg: "Grievance Approved"});
+
+    }
+    catch(err){
+        console.log(err);
+        res.status(500).json({valid: false, msg:"something went wrong"});
+
+    }
+}
+
+const closeGrievance = async(req, res) => {
+    try{
+        const g_id = req.params.g_id;
+        const {remarks} = req.body;
+        const g = await Grievance.findOne({_id: g_id});
+        g.status = "declined"
+        g.approval_remarks = remarks
+        g.updated_date = Date.now()
+        await g.save()
+        return res.status(200).json({valid: true, msg: "Grievance Declined"});
+
+    }
+    catch(err){
+        console.log(err);
+        res.status(500).json({valid: false, msg:"something went wrong"});
+
     }
 }
 
@@ -419,6 +463,8 @@ const resendGrievance = async(req, res) => {
         const g = await Grievance.findOne({_id: g_id});
         g.grievance_date = new Date();
         g.is_resend = true
+        g.updated_date = Date.now()
+
         await g.save()
         return res.status(200).json({valid: true, msg: "resend the grievance"})
     }
@@ -469,9 +515,11 @@ const remindGrievance = async(req, res) => {
 const escalateGrievance = async(req, res) => {
     try{
         const g_id = req.params.g_id
+        const {remarks} = req.body;
         const g = await Grievance.findOne({_id: g_id}) 
         g.grievance_date = new Date()
         g.is_escalated = true;
+        g.updated_date = Date.now()
         await g.save()
         return res.status(201).json({"valid": true, "msg": "Grievance has been escalated"});
     }
@@ -481,6 +529,55 @@ const escalateGrievance = async(req, res) => {
     }
 }
 
+
+const getAllEscalatedGrievances = async(req, res) => {
+    try{
+        const grievances = await Grievance.aggregate([
+            {
+              $lookup: {
+                from: "employees", // Replace with the actual collection name for Department
+                localField: "by_whom_id",
+                foreignField: "_id",
+                as: "by_whom_id",
+              },
+            },
+            {
+              $match: {
+                is_escalated: true
+              }
+            },
+            {
+              $project: {
+                created_date: 1,
+                created_by: 1,
+                updated_date: 1,
+                updated_by: 1,
+                title: 1,
+                message: 1,
+                grievance_type: 1,
+                grievance_date: 1,
+                // employee: 1,
+                status: 1,
+                is_escalated: 1,
+                is_resend: 1,
+                approval_remarks: 1,
+                closure_remarks: 1,
+                emp_name: { $arrayElemAt: ["$by_whom_id.emp_name", 0] },
+                emp_email: { $arrayElemAt: ["$by_whom_id.email", 0] },
+                 
+                // Add other fields as needed
+                },
+            },
+          ]);
+          return res.status(200).json({valid: true, msg:"Escalated grievances has been fetched", data: grievances.reverse()});
+        }
+        catch(err){
+            console.log(err);
+            res.status(500).json({valid: false, msg:"somthing went wrong"});
+        }
+    
+    
+}
 
 module.exports = {
     createGrievance,
@@ -500,5 +597,8 @@ module.exports = {
     getPrintData,
     resendGrievance,
     remindGrievance,
-    escalateGrievance
+    escalateGrievance,
+    approveGrievance,
+    closeGrievance,
+    getAllEscalatedGrievances
 }
