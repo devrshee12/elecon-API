@@ -123,8 +123,85 @@ const getSimCardBills = async(req, res) => {
 const getSpecificSimCardBill = async(req, res) => {
     try{
         const scb_id = req.params.scb_id;
-        const simCardBill = await SimCardBill.findOne({_id: scb_id}).populate("company", "company_name").populate("division", "division_name").populate("department", "department_name").populate("employee", "emp_name").populate("approved_by", "emp_name");
-        return res.status(200).json({valid: true, msg:"specific sim card bill has been fetched", data: simCardBill});
+        // const simCardBill = await SimCardBill.findOne({_id: scb_id}).populate("company", "company_name").populate("division", "division_name").populate("department", "department_name").populate("employee", "emp_name").populate("approved_by", "emp_name");
+        const simCardBill = await SimCardBill.aggregate([
+            
+            {
+              $lookup: {
+                from: "employees", // Replace with the actual collection name for VendorMaster
+                localField: "employee",
+                foreignField: "_id",
+                as: "employee",
+              },
+            },
+            {
+              $lookup: {
+                from: "employees", // Replace with the actual collection name for VendorMaster
+                localField: "approved_by",
+                foreignField: "_id",
+                as: "approved_by",
+              },
+            },
+            {
+              $lookup: {
+                from: "companies", // Replace with the actual collection name for Company
+                localField: "company",
+                foreignField: "_id",
+                as: "company",
+              },
+            },
+            {
+              $lookup: {
+                from: "divisions", // Replace with the actual collection name for Division
+                localField: "division",
+                foreignField: "_id",
+                as: "division",
+              },
+            },
+            {
+              $lookup: {
+                from: "departments", // Replace with the actual collection name for Department
+                localField: "department",
+                foreignField: "_id",
+                as: "department",
+              },
+            },
+            {
+              $project: {
+                created_date: 1,
+                created_by: 1,
+                updated_date: 1,
+                updated_by: 1,
+                employee: { $arrayElemAt: ["$employee.emp_name", 0] },
+                approved_by: { $arrayElemAt: ["$approved_by.emp_name", 0] },
+                service_provider: 1,
+                requisition_date: 1,
+                tarriff_plan_no: 1,
+                mobile_no: 1,
+                data_card_no: 1,
+                issue_date_simcard: 1,
+                issue_date_datacard: 1,
+                amount: 1,
+                
+                
+                
+                company: { $arrayElemAt: ["$company.company_name", 0] },
+                division: { $arrayElemAt: ["$division.division_name", 0] },
+                department: { $arrayElemAt: ["$department.department_name", 0] },
+                // Add other fields as needed
+              },
+            },
+          ]);
+
+          const result = simCardBill.filter((el) => {
+            if(el._id.toString() === scb_id){
+                return true
+            }
+            else{
+                return false
+            }
+          })[0]
+        return res.status(200).json({valid: true, msg:"specific sim card bill has been fetched", data: result});
     }
     catch(err){
         console.log(err);
@@ -136,14 +213,10 @@ const getSpecificSimCardBill = async(req, res) => {
 const editSimCardBill = async(req, res) => {
     try{
         const scb_id = req.params.scb_id;
-        const {company, division, department, employee, approved_by} = req.body;
+        // const {company, division, department, employee, approved_by} = req.body;
         const {service_provider, requisition_date, tarriff_plan_no, mobile_no, data_card_no, issue_date_simcard, issue_date_datacard, amount} = req.body;
         const simCardBill = await SimCardBill.findOne({_id: scb_id});
-        simCardBill.company = company
-        simCardBill.division = division
-        simCardBill.department = department
-        simCardBill.employee = employee
-        simCardBill.approved_by = approved_by
+
 
         simCardBill.service_provider = service_provider
         simCardBill.requisition_date = new Date(requisition_date)

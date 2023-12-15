@@ -183,9 +183,120 @@ const getMAndMBills = async(req, res) => {
 
 const getSpecificMAndMBill = async(req, res) => {
     try{
-        const mb_id = req.params.mb_id;
-        const modelBill = await makeAndModelBill.findOne({_id: mb_id}).populate("company", "company_name").populate("division", "division_name").populate("department", "department_name").populate("employee", "emp_name").populate("approved_by", "emp_name").populate("make_model", "make_and_model_name");
-        return res.status(200).json({valid: true, msg:"specific model bill has been fetched", data: modelBill});
+      const mb_id = req.params.mb_id;
+
+      const modelBill = await makeAndModelBill.aggregate([
+          {
+            $lookup: {
+              from: "makeandmodelmasters", // Replace with the actual collection name for AssetMaster
+              localField: "make_model",
+              foreignField: "_id",
+              as: "make_model",
+            },
+          },
+          {
+            $lookup: {
+              from: "employees", // Replace with the actual collection name for VendorMaster
+              localField: "employee",
+              foreignField: "_id",
+              as: "employee",
+            },
+          },
+          {
+            $lookup: {
+              from: "employees", // Replace with the actual collection name for VendorMaster
+              localField: "approved_by",
+              foreignField: "_id",
+              as: "approved_by",
+            },
+          },
+          {
+            $lookup: {
+              from: "companies", // Replace with the actual collection name for Company
+              localField: "company",
+              foreignField: "_id",
+              as: "company",
+            },
+          },
+          {
+            $lookup: {
+              from: "divisions", // Replace with the actual collection name for Division
+              localField: "division",
+              foreignField: "_id",
+              as: "division",
+            },
+          },
+          {
+            $lookup: {
+              from: "departments", // Replace with the actual collection name for Department
+              localField: "department",
+              foreignField: "_id",
+              as: "department",
+            },
+          },
+          // {
+          //   $match: {
+          //     _id: mb_id
+          //   }
+          // },
+          {
+            $project: {
+              created_date: 1,
+              created_by: 1,
+              updated_date: 1,
+              updated_by: 1,
+              make_model: { $arrayElemAt: ["$make_model.make_and_model_name", 0] },
+              employee: { $arrayElemAt: ["$employee.emp_name", 0] },
+              // employee: 1,
+              approved_by: { $arrayElemAt: ["$approved_by.emp_name", 0] },
+              vehicle_no: 1,
+              purchase_date: 1,
+              issue_date: 1,
+              received_date: 1,
+              engine_no: 1,
+              asset_no: 1,
+              chassis_no: 1,
+              remarks: 1,
+              condition: 1,
+              usage: 1,
+              sale_date: 1,
+              sale_value: 1,
+              wdv_amount: 1,
+              sale_to: 1,
+
+              payment_mode: 1,
+              payment_from_bank: 1,
+              cheque_date: 1,
+              cheque_no: 1,
+              cheque_to: 1,
+              transaction_date: 1,
+              transaction_no: 1,
+              transaction_status: 1,
+              payment_to_bank: 1,
+              amount: 1,
+
+              rc_book_details: 1,
+              insurance_details: 1,
+              puc_details: 1,
+
+              
+              company: { $arrayElemAt: ["$company.company_name", 0] },
+              division: { $arrayElemAt: ["$division.division_name", 0] },
+              department: { $arrayElemAt: ["$department.department_name", 0] },
+              // Add other fields as needed
+            },
+          },
+        ]);
+
+        const result = modelBill.filter((el) => {
+          if(el._id.toString() === mb_id){
+            return true
+          }
+          else{
+            return false
+          }
+        })[0]
+        return res.status(200).json({valid: true, msg:"specific model bill has been fetched dasd", data: result});
     }
     catch(err){
         console.log(err);
@@ -314,20 +425,20 @@ const getAllBillForSpecific = async(req, res) => {
 const editMAndMBill = async(req, res) => {
     try{
         const mb_id = req.params.mb_id;
-        const {company, division, department, make_model, employee, approved_by} = req.body;
+        const {make_model, employee, approved_by} = req.body;
         const {vehicle_no, purchase_date, issue_date, received_date, engine_no, chassis_no, remarks} = req.body;
         const {sale_date, sale_value, wdv_amount, sale_to} = req.body;
         const {payment_mode, payment_from_bank, cheque_date, cheque_no, cheque_to, transaction_date, transaction_no, transaction_status, payment_to_bank, amount} = req.body; 
-        const {rc_book_details, insurance_details, puc_details} = req.files;
+        // const {rc_book_details, insurance_details, puc_details} = req.files;
         
-        const rc_book = await cloudinary.uploader.upload(rc_book_details.tempFilePath)
-        const insurance = await cloudinary.uploader.upload(insurance_details.tempFilePath)
-        const puc = await cloudinary.uploader.upload(puc_details.tempFilePath)
+        // const rc_book = await cloudinary.uploader.upload(rc_book_details.tempFilePath)
+        // const insurance = await cloudinary.uploader.upload(insurance_details.tempFilePath)
+        // const puc = await cloudinary.uploader.upload(puc_details.tempFilePath)
 
         const modelBill = await makeAndModelBill.findOne({_id: mb_id});
-        modelBill.company = company
-        modelBill.division = division
-        modelBill.department = department
+        // modelBill.company = company
+        // modelBill.division = division
+        // modelBill.department = department
         modelBill.make_model = make_model
         modelBill.employee = employee
         modelBill.approved_by = approved_by
@@ -359,9 +470,9 @@ const editMAndMBill = async(req, res) => {
         modelBill.amount = amount
 
 
-        modelBill.rc_book_details = rc_book.url
-        modelBill.insurance_details = insurance.url
-        modelBill.puc_details = puc.url
+        // modelBill.rc_book_details = rc_book.url
+        // modelBill.insurance_details = insurance.url
+        // modelBill.puc_details = puc.url
 
         modelBill.updated_date = Date.now();
 
